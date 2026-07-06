@@ -1,6 +1,6 @@
-# [Project name]
+# Zimbabwe Canine Registry (ZCR)
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+A blockchain-inspired mobile app for registering, verifying, and tracking dogs in Zimbabwe — built for breeders, veterinarians, owners, and regulators.
 
 ## Run & Operate
 
@@ -26,11 +26,23 @@ _Populate as you build — short repo map plus pointers to the source-of-truth f
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- **Offline-first with AsyncStorage** — no backend on first build; all data stored locally in the Expo app. Seed data (4 dogs, 1 litter) pre-loaded on fresh install.
+- **Dark-always theme** — both `light` and `dark` palette in `constants/colors.ts` use the same ZCR dark scheme (black #0D0D0D + gold #C9A84C) so the app is always dark regardless of system preference.
+- **Role-based UI** — actions (health update, transfer, flag stolen) are gated in the UI by `user.role` from RegistryContext. No backend auth yet.
+- **Expo Router file-based routing** — `app/(tabs)/` for tab screens, `app/dog/[id].tsx` for dog detail, `app/dog/health.tsx` and `app/dog/transfer.tsx` for actions. These are registered as Stack screens in `app/_layout.tsx`.
+- **useColors() fix** — uses `colors.dark ? colors.dark : colors.light` (direct property access) instead of casting the whole colors object, avoiding TS2352 errors.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+**Zimbabwe Canine Registry (ZCR)** — a mobile app (Expo/React Native) providing:
+- Dog registration with ISO microchip ID, lineage, health, and ownership data
+- Litter pre-registration tied to certified parentage
+- Veterinary health record updates (role-gated)
+- Ownership transfers with audit trail
+- Stolen dog flagging
+- Microchip lookup / verification
+- Role-based access: Owner, Breeder, Vet, Regulator
+- AsyncStorage persistence (offline-first)
 
 ## User preferences
 

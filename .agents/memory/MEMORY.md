@@ -1,0 +1,1 @@
+- [ZCR useColors fix](zcr-usecolors-fix.md) — direct `colors.dark ? colors.dark : colors.light` avoids TS2352 cast errors from the radius key mismatch.
