@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
