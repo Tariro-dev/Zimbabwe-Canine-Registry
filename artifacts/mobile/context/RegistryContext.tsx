@@ -4,6 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export type Role = 'owner' | 'breeder' | 'vet' | 'regulator';
 export type Gender = 'male' | 'female';
 export type SterilizationStatus = 'Sterilized' | 'Not Sterilized';
+export type BlockchainSyncStatus = 'pending' | 'confirmed' | 'failed';
+
+export interface BreederCertification {
+  certNumber: string;
+  issuedDate: string;
+  status: 'active' | 'suspended' | 'expired';
+}
 
 export interface Dog {
   id: string;
@@ -27,6 +34,12 @@ export interface Dog {
   registrationDate: string;
   isStolen: boolean;
   weight?: string;
+  // Blockchain
+  blockchainTxHash?: string;
+  blockchainSyncStatus: BlockchainSyncStatus;
+  blockchainConfirmedAt?: string;
+  // Breeder certification
+  breederCertification?: BreederCertification;
 }
 
 export interface Litter {
@@ -53,7 +66,7 @@ interface RegistryContextType {
   dogs: Dog[];
   litters: Litter[];
   loading: boolean;
-  addDog: (dog: Omit<Dog, 'id' | 'registrationDate' | 'ownerId' | 'ownerName' | 'breederId' | 'breederName'>) => void;
+  addDog: (dog: Omit<Dog, 'id' | 'registrationDate' | 'ownerId' | 'ownerName' | 'breederId' | 'breederName' | 'blockchainTxHash' | 'blockchainSyncStatus' | 'blockchainConfirmedAt'>) => Dog;
   updateHealthRecord: (dogId: string, vaccines: string, status: SterilizationStatus, lastCheckup?: string) => void;
   transferOwnership: (dogId: string, newOwnerName: string, newOwnerId: string) => void;
   toggleStolen: (dogId: string) => void;
@@ -63,6 +76,12 @@ interface RegistryContextType {
 }
 
 const genId = () => Date.now().toString() + Math.random().toString(36).substr(2, 9);
+
+/** Simulate a deterministic-looking blockchain transaction hash */
+function genTxHash(): string {
+  const hex = () => Math.floor(Math.random() * 0xffffffff).toString(16).padStart(8, '0');
+  return `0x${hex()}${hex()}${hex()}${hex()}${hex()}${hex()}${hex()}${hex()}`;
+}
 
 const SEED_USER: User = {
   id: 'user-001',
@@ -96,6 +115,10 @@ const SEED_DOGS: Dog[] = [
     registrationDate: '2022-04-01',
     isStolen: false,
     weight: '32 kg',
+    blockchainTxHash: '0x3a4f9c1b2d8e7f6a5c4b3d2e1f0a9b8c7d6e5f4a3b2c1d0e9f8a7b6c5d4e3f2',
+    blockchainSyncStatus: 'confirmed',
+    blockchainConfirmedAt: '2022-04-01',
+    breederCertification: { certNumber: 'ZCR-CERT-2022-0001', issuedDate: '2022-04-01', status: 'active' },
   },
   {
     id: 'dog-002',
@@ -116,6 +139,10 @@ const SEED_DOGS: Dog[] = [
     registrationDate: '2021-08-05',
     isStolen: false,
     weight: '28 kg',
+    blockchainTxHash: '0xf1e2d3c4b5a6978869504132acbd4ef56789012345678901234567890abcdef01',
+    blockchainSyncStatus: 'confirmed',
+    blockchainConfirmedAt: '2021-08-05',
+    breederCertification: { certNumber: 'ZCR-CERT-2021-0042', issuedDate: '2021-08-05', status: 'active' },
   },
   {
     id: 'dog-003',
@@ -138,6 +165,10 @@ const SEED_DOGS: Dog[] = [
     registrationDate: '2023-02-01',
     isStolen: false,
     weight: '45 kg',
+    blockchainTxHash: '0x9c8b7a6f5e4d3c2b1a09f8e7d6c5b4a3f2e1d0c9b8a7f6e5d4c3b2a1f0e9d8c7',
+    blockchainSyncStatus: 'confirmed',
+    blockchainConfirmedAt: '2023-02-01',
+    breederCertification: { certNumber: 'ZCR-CERT-2023-0007', issuedDate: '2023-02-01', status: 'active' },
   },
   {
     id: 'dog-004',
@@ -157,6 +188,10 @@ const SEED_DOGS: Dog[] = [
     registrationDate: '2022-12-15',
     isStolen: false,
     weight: '18 kg',
+    blockchainTxHash: '0x2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f5a6b7c8d9e0f1a2b3c',
+    blockchainSyncStatus: 'confirmed',
+    blockchainConfirmedAt: '2022-12-15',
+    breederCertification: { certNumber: 'ZCR-CERT-2022-0093', issuedDate: '2022-12-15', status: 'active' },
   },
 ];
 
@@ -216,19 +251,27 @@ export function RegistryProvider({ children }: { children: React.ReactNode }) {
     try { await AsyncStorage.setItem(KEY_USER, JSON.stringify(next)); } catch (_) {}
   };
 
-  function addDog(dogData: Omit<Dog, 'id' | 'registrationDate' | 'ownerId' | 'ownerName' | 'breederId' | 'breederName'>) {
-    persistDogs([
-      ...dogs,
-      {
-        ...dogData,
-        id: genId(),
-        registrationDate: new Date().toISOString().split('T')[0]!,
-        ownerId: user.id,
-        ownerName: user.name,
-        breederId: user.id,
-        breederName: user.name,
+  function addDog(dogData: Omit<Dog, 'id' | 'registrationDate' | 'ownerId' | 'ownerName' | 'breederId' | 'breederName' | 'blockchainTxHash' | 'blockchainSyncStatus' | 'blockchainConfirmedAt'>): Dog {
+    const today = new Date().toISOString().split('T')[0]!;
+    const newDog: Dog = {
+      ...dogData,
+      id: genId(),
+      registrationDate: today,
+      ownerId: user.id,
+      ownerName: user.name,
+      breederId: user.id,
+      breederName: user.name,
+      blockchainTxHash: genTxHash(),
+      blockchainSyncStatus: 'confirmed',
+      blockchainConfirmedAt: today,
+      breederCertification: dogData.breederCertification ?? {
+        certNumber: `ZCR-CERT-${new Date().getFullYear()}-${Math.floor(Math.random() * 9000 + 1000)}`,
+        issuedDate: today,
+        status: 'active',
       },
-    ]);
+    };
+    persistDogs([...dogs, newDog]);
+    return newDog;
   }
 
   function updateHealthRecord(dogId: string, vaccines: string, status: SterilizationStatus, lastCheckup?: string) {

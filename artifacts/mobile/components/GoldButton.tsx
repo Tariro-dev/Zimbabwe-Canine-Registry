@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActivityIndicator, Pressable, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks/useColors';
 
@@ -10,9 +10,10 @@ interface Props {
   disabled?: boolean;
   variant?: 'filled' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
+  style?: StyleProp<ViewStyle>;
 }
 
-export function GoldButton({ title, onPress, loading = false, disabled = false, variant = 'filled', size = 'md' }: Props) {
+export function GoldButton({ title, onPress, loading = false, disabled = false, variant = 'filled', size = 'md', style }: Props) {
   const colors = useColors();
 
   const handlePress = async () => {
@@ -52,6 +53,7 @@ export function GoldButton({ title, onPress, loading = false, disabled = false, 
           opacity: pressed ? 0.85 : 1,
           transform: [{ scale: pressed ? 0.98 : 1 }],
         },
+        style,
       ]}
     >
       {loading ? (

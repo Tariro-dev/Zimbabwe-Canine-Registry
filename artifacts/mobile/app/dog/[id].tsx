@@ -7,14 +7,16 @@ import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { GoldButton } from '@/components/GoldButton';
-import { RoleBadge } from '@/components/RoleBadge';
 
-function InfoRow({ label, value, highlight }: { label: string; value: string; highlight?: boolean }) {
+function InfoRow({ label, value, highlight, mono }: { label: string; value: string; highlight?: boolean; mono?: boolean }) {
   const colors = useColors();
   return (
     <View style={ir.row}>
       <Text style={[ir.label, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium' }]}>{label}</Text>
-      <Text style={[ir.value, { color: highlight ? colors.primary : colors.foreground, fontFamily: highlight ? 'Inter_600SemiBold' : 'Inter_400Regular' }]} numberOfLines={3}>
+      <Text
+        style={[ir.value, { color: highlight ? colors.primary : colors.foreground, fontFamily: mono ? 'Inter_400Regular' : (highlight ? 'Inter_600SemiBold' : 'Inter_400Regular') }]}
+        numberOfLines={3}
+      >
         {value}
       </Text>
     </View>
@@ -27,7 +29,148 @@ const ir = StyleSheet.create({
   value: { fontSize: 13, flex: 2, textAlign: 'right' },
 });
 
-type Tab = 'info' | 'health' | 'lineage';
+type Tab = 'info' | 'health' | 'lineage' | 'chain';
+
+/** Blockchain workflow diagram tab */
+function ChainTab({ dog }: { dog: ReturnType<typeof useRegistry>['dogs'][number] }) {
+  const colors = useColors();
+  const cert = dog.breederCertification;
+
+  const steps: {
+    icon: string;
+    label: string;
+    sublabel: string;
+    lines: { key: string; value: string; mono?: boolean }[];
+    status: 'confirmed' | 'partial' | 'pending' | 'failed';
+  }[] = [
+    {
+      icon: 'chip',
+      label: 'Microchip Data',
+      sublabel: 'ISO 11784/11785 Standard',
+      lines: [
+        { key: 'Chip ID', value: dog.microchipId },
+        { key: 'DNA Hash', value: dog.dnaHash ?? 'Not provided', mono: true },
+      ],
+      status: 'confirmed',
+    },
+    {
+      icon: 'link-variant',
+      label: 'Blockchain Ledger',
+      sublabel: 'ZCR Distributed Ledger',
+      lines: [
+        { key: 'Sync Status', value: dog.blockchainSyncStatus.toUpperCase() },
+        { key: 'Confirmed', value: dog.blockchainConfirmedAt ?? dog.registrationDate },
+        { key: 'TX Hash', value: dog.blockchainTxHash ? dog.blockchainTxHash.slice(0, 22) + '…' : 'Not available', mono: true },
+      ],
+      status: dog.blockchainSyncStatus === 'confirmed' ? 'confirmed' : dog.blockchainSyncStatus === 'failed' ? 'failed' : 'pending',
+    },
+    {
+      icon: 'dog-side',
+      label: 'Breed History',
+      sublabel: 'Lineage & Litter Records',
+      lines: [
+        { key: 'Dame Chip', value: dog.dameMicrochip ?? 'Not recorded' },
+        { key: 'Sire Chip', value: dog.sireMicrochip ?? 'Not recorded' },
+        { key: 'Litter ID', value: dog.litterId ?? 'Not linked' },
+      ],
+      status: (dog.dameMicrochip || dog.sireMicrochip) ? 'confirmed' : 'partial',
+    },
+    {
+      icon: 'heart-pulse',
+      label: 'Health Records',
+      sublabel: 'Vet-Gated Entries',
+      lines: [
+        { key: 'Vaccines', value: dog.vaccineHistory || 'None on file' },
+        { key: 'Sterilization', value: dog.sterilizationStatus },
+        { key: 'Last Checkup', value: dog.lastCheckup ?? 'Not recorded' },
+      ],
+      status: dog.vaccineHistory ? 'confirmed' : 'partial',
+    },
+    {
+      icon: 'certificate',
+      label: 'Breeder Certification',
+      sublabel: 'ZCR Issued Certificate',
+      lines: cert
+        ? [
+            { key: 'Cert Number', value: cert.certNumber },
+            { key: 'Issued', value: cert.issuedDate },
+            { key: 'Status', value: cert.status.toUpperCase() },
+          ]
+        : [{ key: 'Status', value: 'Not issued' }],
+      status: cert ? (cert.status === 'active' ? 'confirmed' : 'partial') : 'pending',
+    },
+  ];
+
+  const statusColor = (s: 'confirmed' | 'partial' | 'pending' | 'failed') => {
+    if (s === 'confirmed') return colors.primary;
+    if (s === 'partial') return colors.warning ?? '#F59E0B';
+    if (s === 'failed') return colors.destructive ?? '#EF4444';
+    return colors.mutedForeground;
+  };
+
+  const statusIcon = (s: 'confirmed' | 'partial' | 'pending' | 'failed') => {
+    if (s === 'confirmed') return 'check-circle';
+    if (s === 'partial') return 'alert-circle';
+    if (s === 'failed') return 'close-circle';
+    return 'clock-outline';
+  };
+
+  return (
+    <View style={chainStyles.wrap}>
+      {steps.map((step, idx) => (
+        <View key={idx} style={chainStyles.stepOuter}>
+          {/* Connector line */}
+          {idx < steps.length - 1 && (
+            <View style={[chainStyles.connector, { borderColor: colors.border }]} />
+          )}
+          {/* Node */}
+          <View style={[chainStyles.node, { backgroundColor: colors.card, borderColor: statusColor(step.status) + '50' }]}>
+            {/* Node header */}
+            <View style={chainStyles.nodeHeader}>
+              <View style={[chainStyles.nodeIcon, { backgroundColor: statusColor(step.status) + '18' }]}>
+                <MaterialCommunityIcons name={step.icon as any} size={18} color={statusColor(step.status)} />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={[chainStyles.nodeLabel, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>{step.label}</Text>
+                <Text style={[chainStyles.nodeSub, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>{step.sublabel}</Text>
+              </View>
+              <Ionicons name={statusIcon(step.status) as any} size={16} color={statusColor(step.status)} />
+            </View>
+            {/* Node data lines */}
+            <View style={[chainStyles.nodeData, { borderTopColor: colors.border }]}>
+              {step.lines.map((line, li) => (
+                <View key={li} style={chainStyles.dataRow}>
+                  <Text style={[chainStyles.dataKey, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium' }]}>{line.key}</Text>
+                  <Text
+                    style={[chainStyles.dataVal, { color: colors.foreground, fontFamily: line.mono ? 'Inter_400Regular' : 'Inter_400Regular' }]}
+                    numberOfLines={2}
+                  >
+                    {line.value}
+                  </Text>
+                </View>
+              ))}
+            </View>
+          </View>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+const chainStyles = StyleSheet.create({
+  wrap: { gap: 0 },
+  stepOuter: { position: 'relative' },
+  connector: { position: 'absolute', left: 22, top: 70, bottom: -12, width: 2, borderLeftWidth: 2, borderStyle: 'dashed', zIndex: 0 },
+  node: { borderWidth: 1, borderRadius: 12, marginBottom: 12, overflow: 'hidden', zIndex: 1 },
+  nodeHeader: { flexDirection: 'row', alignItems: 'center', padding: 12, gap: 10 },
+  nodeIcon: { width: 36, height: 36, borderRadius: 10, alignItems: 'center', justifyContent: 'center' },
+  nodeLabel: { fontSize: 14 },
+  nodeSub: { fontSize: 11, marginTop: 1 },
+  nodeData: { borderTopWidth: 1, paddingHorizontal: 12, paddingVertical: 8, gap: 0 },
+  dataRow: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 5, gap: 8 },
+  dataKey: { fontSize: 11, letterSpacing: 0.3, flex: 1 },
+  dataVal: { fontSize: 12, flex: 2, textAlign: 'right' },
+});
 
 export default function DogDetailScreen() {
   const colors = useColors();
@@ -52,7 +195,6 @@ export default function DogDetailScreen() {
   }
 
   const isOwner = dog.ownerId === user.id;
-  const isBreeder = dog.breederId === user.id;
   const canTransfer = isOwner || user.role === 'regulator';
   const canUpdateHealth = user.role === 'vet' || user.role === 'regulator';
   const canFlagStolen = isOwner || user.role === 'regulator';
@@ -77,11 +219,18 @@ export default function DogDetailScreen() {
     );
   };
 
-  const TABS: { key: Tab; label: string }[] = [
-    { key: 'info', label: 'Identity' },
-    { key: 'health', label: 'Health' },
-    { key: 'lineage', label: 'Lineage' },
+  const TABS: { key: Tab; label: string; icon: string }[] = [
+    { key: 'info', label: 'Identity', icon: 'account-card-details' },
+    { key: 'health', label: 'Health', icon: 'heart-pulse' },
+    { key: 'lineage', label: 'Lineage', icon: 'dog-side' },
+    { key: 'chain', label: 'Chain', icon: 'link-variant' },
   ];
+
+  const syncColor = dog.blockchainSyncStatus === 'confirmed'
+    ? colors.primary
+    : dog.blockchainSyncStatus === 'pending'
+    ? (colors.warning ?? '#F59E0B')
+    : (colors.destructive ?? '#EF4444');
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
@@ -131,6 +280,13 @@ export default function DogDetailScreen() {
                   {dog.sterilizationStatus}
                 </Text>
               </View>
+              {/* Blockchain status badge */}
+              <View style={[styles.badge, { backgroundColor: syncColor + '18', borderColor: syncColor + '40', borderRadius: 6 }]}>
+                <MaterialCommunityIcons name="link-variant" size={11} color={syncColor} />
+                <Text style={[styles.badgeText, { color: syncColor, fontFamily: 'Inter_600SemiBold' }]}>
+                  {dog.blockchainSyncStatus.toUpperCase()}
+                </Text>
+              </View>
             </View>
           </View>
         </View>
@@ -139,6 +295,11 @@ export default function DogDetailScreen() {
         <View style={[styles.chipCard, { backgroundColor: colors.primary + '12', borderColor: colors.primary + '30', borderRadius: colors.radius }]}>
           <MaterialCommunityIcons name="chip" size={20} color={colors.primary} />
           <Text style={[styles.chipText, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>{dog.microchipId}</Text>
+          {dog.blockchainSyncStatus === 'confirmed' && (
+            <View style={{ marginLeft: 'auto' }}>
+              <MaterialCommunityIcons name="check-decagram" size={18} color={colors.primary} />
+            </View>
+          )}
         </View>
 
         {/* Tabs */}
@@ -149,6 +310,11 @@ export default function DogDetailScreen() {
               onPress={() => setActiveTab(t.key)}
               style={[styles.tab, { backgroundColor: activeTab === t.key ? colors.primary : 'transparent', borderRadius: colors.radius - 4 }]}
             >
+              <MaterialCommunityIcons
+                name={t.icon as any}
+                size={13}
+                color={activeTab === t.key ? colors.primaryForeground : colors.mutedForeground}
+              />
               <Text style={[styles.tabText, {
                 color: activeTab === t.key ? colors.primaryForeground : colors.mutedForeground,
                 fontFamily: activeTab === t.key ? 'Inter_600SemiBold' : 'Inter_400Regular',
@@ -179,7 +345,7 @@ export default function DogDetailScreen() {
               <InfoRow label="Sterilization" value={dog.sterilizationStatus} />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
               {dog.lastCheckup ? <><InfoRow label="Last Checkup" value={dog.lastCheckup} /><View style={[styles.divider, { backgroundColor: colors.border }]} /></> : null}
-              {dog.dnaHash ? <><InfoRow label="DNA Hash" value={dog.dnaHash} /><View style={[styles.divider, { backgroundColor: colors.border }]} /></> : null}
+              {dog.dnaHash ? <><InfoRow label="DNA Hash" value={dog.dnaHash} mono /><View style={[styles.divider, { backgroundColor: colors.border }]} /></> : null}
               <View style={styles.vaccineWrap}>
                 <Text style={[styles.vaccineLabel, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium' }]}>VACCINE HISTORY</Text>
                 <Text style={[styles.vaccineText, { color: colors.foreground, fontFamily: 'Inter_400Regular' }]}>
@@ -202,6 +368,8 @@ export default function DogDetailScreen() {
               )}
             </>
           )}
+
+          {activeTab === 'chain' && <ChainTab dog={dog} />}
         </View>
 
         {/* Actions */}
@@ -272,10 +440,10 @@ const styles = StyleSheet.create({
   badge: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 8, paddingVertical: 3, borderWidth: 1, gap: 4 },
   badgeText: { fontSize: 10, letterSpacing: 0.4 },
   chipCard: { flexDirection: 'row', alignItems: 'center', paddingVertical: 12, paddingHorizontal: 16, borderWidth: 1, gap: 10 },
-  chipText: { fontSize: 15, letterSpacing: 1 },
+  chipText: { fontSize: 15, letterSpacing: 1, flex: 1 },
   tabBar: { flexDirection: 'row', padding: 4, borderWidth: 1, gap: 4 },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: 8 },
-  tabText: { fontSize: 13 },
+  tab: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingVertical: 8, flexDirection: 'row', gap: 4 },
+  tabText: { fontSize: 11 },
   tabContent: { padding: 16, borderWidth: 1 },
   divider: { height: 1 },
   vaccineWrap: { paddingTop: 10, gap: 8 },
