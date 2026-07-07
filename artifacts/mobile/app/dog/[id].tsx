@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View, Modal } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
@@ -7,6 +7,9 @@ import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { GoldButton } from '@/components/GoldButton';
+import QRCode from 'react-native-qrcode-svg';
+import * as Sharing from 'expo-sharing';
+import ViewShot from 'react-native-view-shot';
 
 function InfoRow({ label, value, highlight, mono }: { label: string; value: string; highlight?: boolean; mono?: boolean }) {
   const colors = useColors();
@@ -178,6 +181,10 @@ export default function DogDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { dogs, user, toggleStolen } = useRegistry();
   const [activeTab, setActiveTab] = useState<Tab>('info');
+  const [showQR, setShowQR] = useState(false);
+  const qrRef = useRef<any>();
+  const viewShotRef = useRef<any>();
+
   const topPt = Platform.OS === 'web' ? 67 : insets.top;
 
   const dog = dogs.find(d => d.id === id);
@@ -194,10 +201,11 @@ export default function DogDetailScreen() {
     );
   }
 
-  const isOwner = dog.ownerId === user.id;
-  const canTransfer = isOwner || user.role === 'regulator';
-  const canUpdateHealth = user.role === 'vet' || user.role === 'regulator';
-  const canFlagStolen = isOwner || user.role === 'regulator';
+  const isOwner = dog.ownerId === user?.id;
+  const isBreeder = user?.role === 'breeder';
+  const canTransfer = isOwner || user?.role === 'regulator';
+  const canUpdateHealth = user?.role === 'vet' || user?.role === 'regulator';
+  const canFlagStolen = isOwner || user?.role === 'regulator';
 
   const handleToggleStolen = async () => {
     Alert.alert(
@@ -217,6 +225,19 @@ export default function DogDetailScreen() {
         },
       ]
     );
+  };
+
+  const handleExportQR = async () => {
+    try {
+      const uri = await viewShotRef.current.capture();
+      await Sharing.shareAsync(uri, {
+        mimeType: 'image/png',
+        dialogTitle: `ZCR_${dog.name}_QR`,
+        UTI: 'public.png',
+      });
+    } catch (e) {
+      Alert.alert('Error', 'Could not export QR code image.');
+    }
   };
 
   const TABS: { key: Tab; label: string; icon: string }[] = [
@@ -242,7 +263,9 @@ export default function DogDetailScreen() {
         <Text style={[styles.headerTitle, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]} numberOfLines={1}>
           {dog.name}
         </Text>
-        <View style={{ width: 40 }} />
+        <TouchableOpacity onPress={() => setShowQR(true)} style={styles.backBtn}>
+          <MaterialCommunityIcons name="qrcode" size={24} color={colors.primary} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView
@@ -418,6 +441,50 @@ export default function DogDetailScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* QR Modal */}
+      <Modal visible={showQR} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.modalCard, { backgroundColor: colors.background, borderRadius: colors.radius }]}>
+            <View style={styles.modalHeader}>
+              <Text style={[styles.modalTitle, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Dog QR Passport</Text>
+              <TouchableOpacity onPress={() => setShowQR(false)}>
+                <Ionicons name="close" size={24} color={colors.mutedForeground} />
+              </TouchableOpacity>
+            </View>
+
+            <ViewShot ref={viewShotRef} options={{ format: 'png', quality: 0.9 }}>
+              <View style={[styles.qrContainer, { backgroundColor: '#FFFFFF', padding: 24, borderRadius: 12 }]}>
+                <QRCode
+                  value={`zcr://dog/${dog.microchipId}`}
+                  size={200}
+                  color={colors.primary}
+                  backgroundColor="#FFFFFF"
+                  getRef={(c) => (qrRef.current = c)}
+                />
+                <View style={{ marginTop: 20, alignItems: 'center' }}>
+                  <Text style={{ color: '#000000', fontSize: 18, fontWeight: 'bold' }}>{dog.name}</Text>
+                  <Text style={{ color: '#666666', fontSize: 14 }}>{dog.microchipId}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 8, gap: 4 }}>
+                    <Image source={require('@/assets/images/icon.png')} style={{ width: 24, height: 24, borderRadius: 4 }} />
+                    <Text style={{ color: colors.primary, fontWeight: '600', fontSize: 12 }}>Zimbabwe Canine Registry</Text>
+                  </View>
+                </View>
+              </View>
+            </ViewShot>
+
+            <View style={{ gap: 10, marginTop: 20 }}>
+              <GoldButton title="Share QR Passport" onPress={handleExportQR} icon="share-variant" />
+              <TouchableOpacity
+                style={[styles.saveBtn, { borderColor: colors.border, borderRadius: colors.radius }]}
+                onPress={() => setShowQR(false)}
+              >
+                <Text style={[styles.saveBtnText, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>Close</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
@@ -457,4 +524,11 @@ const styles = StyleSheet.create({
   ownerRow: { flexDirection: 'row', alignItems: 'center', padding: 14, borderWidth: 1, gap: 12 },
   ownerLabel: { fontSize: 12 },
   ownerName: { fontSize: 15, marginTop: 2 },
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', padding: 24 },
+  modalCard: { width: '100%', padding: 24 },
+  modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  modalTitle: { fontSize: 20 },
+  qrContainer: { alignItems: 'center', alignSelf: 'center' },
+  saveBtn: { padding: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  saveBtnText: { fontSize: 14 },
 });

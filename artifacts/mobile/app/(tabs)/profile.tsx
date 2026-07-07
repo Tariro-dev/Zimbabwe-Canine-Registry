@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Switch } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -8,6 +8,7 @@ import { useRegistry } from '@/context/RegistryContext';
 import { RoleBadge } from '@/components/RoleBadge';
 import { GoldButton } from '@/components/GoldButton';
 import type { Role } from '@/context/RegistryContext';
+import * as LocalAuthentication from 'expo-local-authentication';
 
 const ROLES: { key: Role; label: string; description: string }[] = [
   { key: 'owner', label: 'Dog Owner', description: 'Transfer & flag dogs' },
@@ -19,17 +20,42 @@ const ROLES: { key: Role; label: string; description: string }[] = [
 export default function ProfileScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { user, dogs, litters, updateUser } = useRegistry();
+  const { user, dogs, litters, updateUser, logout, loading, requireDeviceSecurity, setRequireDeviceSecurity } = useRegistry();
   const [editing, setEditing] = useState(false);
-  const [name, setName] = useState(user.name);
-  const [kennelName, setKennelName] = useState(user.kennelName ?? '');
-  const [licenseNumber, setLicenseNumber] = useState(user.licenseNumber ?? '');
+  const [name, setName] = useState(user?.name ?? '');
+  const [kennelName, setKennelName] = useState(user?.kennelName ?? '');
+  const [licenseNumber, setLicenseNumber] = useState(user?.licenseNumber ?? '');
+
+  if (loading || !user) return null;
+
   const topPt = Platform.OS === 'web' ? 67 : insets.top;
 
   const initials = user.name.split(' ').map(p => p[0]).join('').toUpperCase().slice(0, 2);
   const myDogs = dogs.filter(d => d.ownerId === user.id || d.breederId === user.id);
   const myLitters = litters.filter(l => l.breederId === user.id);
   const sterilized = dogs.filter(d => d.sterilizationStatus === 'Sterilized').length;
+
+  const handleToggleSecurity = async (val: boolean) => {
+    if (val) {
+      const hasHardware = await LocalAuthentication.hasHardwareAsync();
+      const isEnrolled = await LocalAuthentication.isEnrolledAsync();
+
+      if (!hasHardware || !isEnrolled) {
+        Alert.alert('Not Available', 'Your device does not have biometrics or a screen lock set up.');
+        return;
+      }
+
+      // Verify before enabling
+      const result = await LocalAuthentication.authenticateAsync({
+        promptMessage: 'Confirm identity to enable app lock',
+      });
+
+      if (!result.success) return;
+    }
+
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+    setRequireDeviceSecurity(val);
+  };
 
   const handleSave = async () => {
     if (!name.trim()) { Alert.alert('Error', 'Name cannot be empty.'); return; }
@@ -145,6 +171,25 @@ export default function ProfileScreen() {
         </TouchableOpacity>
       ))}
 
+      {/* Security */}
+      <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Security</Text>
+      <View style={[styles.securityCard, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
+        <View style={styles.securityRow}>
+          <View style={{ flex: 1, gap: 2 }}>
+            <Text style={[styles.securityLabel, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>App Lock</Text>
+            <Text style={[styles.securitySub, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
+              Require device PIN or biometrics to open ZCR
+            </Text>
+          </View>
+          <Switch
+            value={requireDeviceSecurity}
+            onValueChange={handleToggleSecurity}
+            trackColor={{ false: colors.border, true: colors.primary + '80' }}
+            thumbColor={requireDeviceSecurity ? colors.primary : '#f4f3f4'}
+          />
+        </View>
+      </View>
+
       {/* Account info */}
       <View style={[styles.accountCard, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
         <Text style={[styles.accountTitle, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>Account</Text>
@@ -163,6 +208,23 @@ export default function ProfileScreen() {
           <Text style={[styles.accountValue, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}>ISO 11784/85 · ERC-721</Text>
         </View>
       </View>
+
+      <TouchableOpacity
+        style={[styles.logoutButton, { borderColor: colors.destructive, borderRadius: colors.radius }]}
+        onPress={() => {
+          Alert.alert(
+            'Logout',
+            'Are you sure you want to logout?',
+            [
+              { text: 'Cancel', style: 'cancel' },
+              { text: 'Logout', style: 'destructive', onPress: logout },
+            ]
+          );
+        }}
+      >
+        <MaterialCommunityIcons name="logout" size={20} color={colors.destructive} />
+        <Text style={[styles.logoutText, { color: colors.destructive, fontFamily: 'Inter_600SemiBold' }]}>Logout</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 }
@@ -199,4 +261,18 @@ const styles = StyleSheet.create({
   accountLabel: { fontSize: 13 },
   accountValue: { fontSize: 13 },
   divider: { height: 1 },
+  securityCard: { padding: 16, borderWidth: 1 },
+  securityRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  securityLabel: { fontSize: 14 },
+  securitySub: { fontSize: 12 },
+  logoutButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 16,
+    borderWidth: 1,
+    marginTop: 12,
+    gap: 8,
+  },
+  logoutText: { fontSize: 14 },
 });

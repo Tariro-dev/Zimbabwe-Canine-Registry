@@ -55,6 +55,8 @@ export interface Litter {
 export interface User {
   id: string;
   name: string;
+  email: string;
+  password?: string;
   role: Role;
   kennelName?: string;
   licenseNumber?: string;
@@ -62,10 +64,16 @@ export interface User {
 }
 
 interface RegistryContextType {
-  user: User;
+  user: User | null;
+  users: User[];
   dogs: Dog[];
   litters: Litter[];
   loading: boolean;
+  requireDeviceSecurity: boolean;
+  setRequireDeviceSecurity: (val: boolean) => void;
+  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
+  signup: (userData: Omit<User, 'id' | 'registeredAt'>) => Promise<{ success: boolean; message?: string }>;
+  logout: () => void;
   addDog: (dog: Omit<Dog, 'id' | 'registrationDate' | 'ownerId' | 'ownerName' | 'breederId' | 'breederName' | 'blockchainTxHash' | 'blockchainSyncStatus' | 'blockchainConfirmedAt'>) => Dog;
   updateHealthRecord: (dogId: string, vaccines: string, status: SterilizationStatus, lastCheckup?: string) => void;
   transferOwnership: (dogId: string, newOwnerName: string, newOwnerId: string) => void;
@@ -210,26 +218,34 @@ const SEED_LITTERS: Litter[] = [
 const KEY_DOGS = '@zcr:dogs';
 const KEY_LITTERS = '@zcr:litters';
 const KEY_USER = '@zcr:user';
+const KEY_USERS = '@zcr:users';
+const KEY_SECURITY = '@zcr:require_security';
 
 const RegistryContext = createContext<RegistryContextType | null>(null);
 
 export function RegistryProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User>(SEED_USER);
+  const [user, setUser] = useState<User | null>(null);
+  const [users, setUsers] = useState<User[]>([]);
   const [dogs, setDogs] = useState<Dog[]>(SEED_DOGS);
   const [litters, setLitters] = useState<Litter[]>(SEED_LITTERS);
+  const [requireDeviceSecurity, setRequireDeviceSecurityState] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     (async () => {
       try {
-        const [sd, sl, su] = await Promise.all([
+        const [sd, sl, su, sus, sec] = await Promise.all([
           AsyncStorage.getItem(KEY_DOGS),
           AsyncStorage.getItem(KEY_LITTERS),
           AsyncStorage.getItem(KEY_USER),
+          AsyncStorage.getItem(KEY_USERS),
+          AsyncStorage.getItem(KEY_SECURITY),
         ]);
         if (sd) setDogs(JSON.parse(sd));
         if (sl) setLitters(JSON.parse(sl));
         if (su) setUser(JSON.parse(su));
+        if (sus) setUsers(JSON.parse(sus));
+        if (sec) setRequireDeviceSecurityState(JSON.parse(sec));
       } catch (_) {
         // use seed data on error
       } finally {
@@ -246,12 +262,65 @@ export function RegistryProvider({ children }: { children: React.ReactNode }) {
     setLitters(next);
     try { await AsyncStorage.setItem(KEY_LITTERS, JSON.stringify(next)); } catch (_) {}
   };
-  const persistUser = async (next: User) => {
+  const persistUser = async (next: User | null) => {
     setUser(next);
-    try { await AsyncStorage.setItem(KEY_USER, JSON.stringify(next)); } catch (_) {}
+    try {
+      if (next) {
+        await AsyncStorage.setItem(KEY_USER, JSON.stringify(next));
+      } else {
+        await AsyncStorage.removeItem(KEY_USER);
+      }
+    } catch (_) {}
+  };
+  const persistUsers = async (next: User[]) => {
+    setUsers(next);
+    try { await AsyncStorage.setItem(KEY_USERS, JSON.stringify(next)); } catch (_) {}
   };
 
+  const setRequireDeviceSecurity = async (val: boolean) => {
+    setRequireDeviceSecurityState(val);
+    try { await AsyncStorage.setItem(KEY_SECURITY, JSON.stringify(val)); } catch (_) {}
+  };
+
+  async function login(email: string, password: string) {
+    const found = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+    if (!found) return { success: false, message: 'User not found' };
+    if (found.password !== password) return { success: false, message: 'Incorrect password' };
+
+    // In a real app, don't store password in session
+    const sessionUser = { ...found };
+    delete sessionUser.password;
+    persistUser(sessionUser);
+    return { success: true };
+  }
+
+  async function signup(userData: Omit<User, 'id' | 'registeredAt'>) {
+    if (users.some(u => u.email.toLowerCase() === userData.email.toLowerCase())) {
+      return { success: false, message: 'Email already registered' };
+    }
+
+    const newUser: User = {
+      ...userData,
+      id: genId(),
+      registeredAt: new Date().toISOString().split('T')[0]!,
+    };
+
+    const nextUsers = [...users, newUser];
+    await persistUsers(nextUsers);
+
+    const sessionUser = { ...newUser };
+    delete sessionUser.password;
+    persistUser(sessionUser);
+
+    return { success: true };
+  }
+
+  function logout() {
+    persistUser(null);
+  }
+
   function addDog(dogData: Omit<Dog, 'id' | 'registrationDate' | 'ownerId' | 'ownerName' | 'breederId' | 'breederName' | 'blockchainTxHash' | 'blockchainSyncStatus' | 'blockchainConfirmedAt'>): Dog {
+    if (!user) throw new Error('Must be logged in to add a dog');
     const today = new Date().toISOString().split('T')[0]!;
     const newDog: Dog = {
       ...dogData,
@@ -293,6 +362,7 @@ export function RegistryProvider({ children }: { children: React.ReactNode }) {
   }
 
   function addLitter(data: Omit<Litter, 'id' | 'registeredAt' | 'breederId' | 'breederName'>) {
+    if (!user) throw new Error('Must be logged in to add a litter');
     persistLitters([
       ...litters,
       { ...data, id: genId(), registeredAt: new Date().toISOString().split('T')[0]!, breederId: user.id, breederName: user.name },
@@ -304,12 +374,13 @@ export function RegistryProvider({ children }: { children: React.ReactNode }) {
   }
 
   function updateUser(updates: Partial<Pick<User, 'name' | 'kennelName' | 'licenseNumber' | 'role'>>) {
+    if (!user) return;
     persistUser({ ...user, ...updates });
   }
 
   return (
     <RegistryContext.Provider
-      value={{ user, dogs, litters, loading, addDog, updateHealthRecord, transferOwnership, toggleStolen, addLitter, findDogByMicrochip, updateUser }}
+      value={{ user, users, dogs, litters, loading, requireDeviceSecurity, setRequireDeviceSecurity, login, signup, logout, addDog, updateHealthRecord, transferOwnership, toggleStolen, addLitter, findDogByMicrochip, updateUser }}
     >
       {children}
     </RegistryContext.Provider>

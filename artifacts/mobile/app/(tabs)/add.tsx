@@ -141,10 +141,23 @@ const confStyles = StyleSheet.create({
 export default function AddScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { addDog, addLitter } = useRegistry();
+  const { addDog, addLitter, user } = useRegistry();
   const [mode, setMode] = useState<Mode>('dog');
   const [saving, setSaving] = useState(false);
   const [confirmedDog, setConfirmedDog] = useState<Dog | null>(null);
+
+  if (user?.role !== 'breeder' && user?.role !== 'regulator') {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+        <MaterialCommunityIcons name="shield-lock" size={64} color={colors.primary} />
+        <Text style={{ color: colors.foreground, fontSize: 20, fontFamily: 'Inter_700Bold', marginTop: 20 }}>Breeder Access Only</Text>
+        <Text style={{ color: colors.mutedForeground, textAlign: 'center', marginTop: 10 }}>
+          Only registered Breeders can add new dogs to the registry.
+        </Text>
+        <GoldButton title="Go to Dashboard" onPress={() => router.replace('/(tabs)')} style={{ marginTop: 24 }} />
+      </View>
+    );
+  }
   const topPt = Platform.OS === 'web' ? 67 : insets.top;
 
   // Dog form state

@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
+import React, { useState, useEffect } from 'react';
+import { Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View, Alert } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
@@ -7,7 +7,7 @@ import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { GoldButton } from '@/components/GoldButton';
-import { RoleBadge } from '@/components/RoleBadge';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 import type { Dog } from '@/context/RegistryContext';
 
 function InfoRow({ label, value }: { label: string; value: string }) {
@@ -29,25 +29,68 @@ const irStyles = StyleSheet.create({
 export default function VerifyScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { findDogByMicrochip } = useRegistry();
+  const { findDogByMicrochip, dogs } = useRegistry();
   const [input, setInput] = useState('');
   const [result, setResult] = useState<Dog | null | undefined>(undefined);
   const [searched, setSearched] = useState(false);
+  const [showScanner, setShowScanner] = useState(false);
+
+  const [permission, requestPermission] = useCameraPermissions();
+
   const topPt = Platform.OS === 'web' ? 67 : insets.top;
 
-  const handleVerify = async () => {
-    if (!input.trim()) return;
+  const handleVerify = async (chipId: string) => {
+    if (!chipId.trim()) return;
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
-    const dog = findDogByMicrochip(input.trim());
+    const dog = findDogByMicrochip(chipId.trim());
     setResult(dog ?? null);
     setSearched(true);
+    setInput(chipId);
   };
 
-  const handleClear = () => {
-    setInput('');
-    setResult(undefined);
-    setSearched(false);
+  const handleBarCodeScanned = ({ data }: { data: string }) => {
+    setShowScanner(false);
+    // Expected format zcr://dog/CHIP_ID
+    if (data.startsWith('zcr://dog/')) {
+      const chipId = data.split('/').pop();
+      if (chipId) handleVerify(chipId);
+    } else {
+      // Try direct chip ID if it doesn't match our protocol
+      handleVerify(data);
+    }
   };
+
+  const openScanner = async () => {
+    if (!permission?.granted) {
+      const { granted } = await requestPermission();
+      if (!granted) {
+        Alert.alert('Permission Required', 'Camera access is needed to scan QR codes.');
+        return;
+      }
+    }
+    setShowScanner(true);
+  };
+
+  if (showScanner) {
+    return (
+      <View style={styles.scannerContainer}>
+        <CameraView
+          style={StyleSheet.absoluteFill}
+          onBarcodeScanned={handleBarCodeScanned}
+          barcodeSettings={{
+            barcodeTypes: ['qr'],
+          }}
+        />
+        <View style={[styles.scannerOverlay, { paddingTop: insets.top + 20 }]}>
+          <TouchableOpacity onPress={() => setShowScanner(false)} style={styles.closeScanner}>
+            <Ionicons name="close" size={32} color="#FFFFFF" />
+          </TouchableOpacity>
+          <View style={styles.scanFrame} />
+          <Text style={styles.scanText}>Position the dog's QR code inside the frame</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -58,35 +101,47 @@ export default function VerifyScreen() {
     >
       <Text style={[styles.title, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Verify Dog</Text>
       <Text style={[styles.sub, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
-        Enter an ISO microchip ID to look up any registered dog on the ZCR ledger.
+        Scan a QR code or enter a microchip ID to verify a dog's registration on the ZCR ledger.
       </Text>
+
+      {/* Actions */}
+      <View style={styles.verifyActions}>
+        <TouchableOpacity
+          style={[styles.scanBtn, { backgroundColor: colors.primary, borderRadius: colors.radius }]}
+          onPress={openScanner}
+        >
+          <MaterialCommunityIcons name="qrcode-scan" size={28} color={colors.primaryForeground} />
+          <Text style={[styles.scanBtnText, { color: colors.primaryForeground, fontFamily: 'Inter_600SemiBold' }]}>Scan QR Passport</Text>
+        </TouchableOpacity>
+
+        <View style={styles.orRow}>
+          <View style={[styles.orLine, { backgroundColor: colors.border }]} />
+          <Text style={[styles.orText, { color: colors.mutedForeground }]}>OR ENTER ID</Text>
+          <View style={[styles.orLine, { backgroundColor: colors.border }]} />
+        </View>
+      </View>
 
       {/* Input */}
       <View style={[styles.inputCard, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-        <View style={[styles.iconCircle, { backgroundColor: colors.primary + '18' }]}>
-          <MaterialCommunityIcons name="barcode-scan" size={28} color={colors.primary} />
-        </View>
-
-        <Text style={[styles.inputLabel, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium' }]}>ISO MICROCHIP ID</Text>
         <View style={[styles.inputWrap, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: colors.radius - 2 }]}>
           <TextInput
             value={input}
             onChangeText={t => { setInput(t); setSearched(false); }}
-            placeholder="e.g. ZWE000001234567"
+            placeholder="ISO Microchip ID"
             placeholderTextColor={colors.mutedForeground}
             style={[styles.textInput, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}
             autoCapitalize="characters"
             returnKeyType="search"
-            onSubmitEditing={handleVerify}
+            onSubmitEditing={() => handleVerify(input)}
           />
           {input.length > 0 && (
-            <TouchableOpacity onPress={handleClear}>
+            <TouchableOpacity onPress={() => { setInput(''); setSearched(false); setResult(undefined); }}>
               <Ionicons name="close-circle" size={20} color={colors.mutedForeground} />
             </TouchableOpacity>
           )}
         </View>
 
-        <GoldButton title="Verify on ZCR Ledger" onPress={handleVerify} size="lg" />
+        <GoldButton title="Verify Manually" onPress={() => handleVerify(input)} />
       </View>
 
       {/* Results */}
@@ -98,9 +153,6 @@ export default function VerifyScreen() {
             No dog registered with microchip ID
           </Text>
           <Text style={[styles.chipDisplay, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>{input}</Text>
-          <Text style={[styles.notFoundSub, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular', marginTop: 4 }]}>
-            This dog may not be registered or the chip ID is incorrect.
-          </Text>
         </View>
       )}
 
@@ -111,12 +163,6 @@ export default function VerifyScreen() {
               <Ionicons name="checkmark-circle" size={18} color={colors.success} />
               <Text style={[styles.verifiedText, { color: colors.success, fontFamily: 'Inter_700Bold' }]}>VERIFIED ON ZCR</Text>
             </View>
-            {result.isStolen && (
-              <View style={[styles.stolenBadge, { backgroundColor: '#EF444420', borderColor: '#EF444440', borderRadius: colors.radius - 4 }]}>
-                <Ionicons name="warning" size={16} color={colors.destructive} />
-                <Text style={[styles.stolenText, { color: colors.destructive, fontFamily: 'Inter_700Bold' }]}>STOLEN</Text>
-              </View>
-            )}
           </View>
 
           <Text style={[styles.dogName, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>{result.name}</Text>
@@ -125,41 +171,10 @@ export default function VerifyScreen() {
           <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
           <InfoRow label="Microchip ID" value={result.microchipId} />
-          <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-          <InfoRow label="Gender" value={result.gender === 'male' ? 'Male' : 'Female'} />
-          <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-          <InfoRow label="Color" value={result.color} />
-          <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-          <InfoRow label="Date of Birth" value={result.birthDate} />
-          <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-          {result.weight && <><InfoRow label="Weight" value={result.weight} /><View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} /></>}
           <InfoRow label="Registered Owner" value={result.ownerName} />
-          <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
           <InfoRow label="Registered Breeder" value={result.breederName} />
-          <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-          <InfoRow label="Registration Date" value={result.registrationDate} />
-          <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
           <InfoRow label="Sterilization" value={result.sterilizationStatus} />
-          {result.vaccineHistory && (
-            <>
-              <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-              <InfoRow label="Vaccines" value={result.vaccineHistory} />
-            </>
-          )}
-          {result.lastCheckup && (
-            <>
-              <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-              <InfoRow label="Last Checkup" value={result.lastCheckup} />
-            </>
-          )}
-          {result.dnaHash && (
-            <>
-              <View style={[styles.divider, { backgroundColor: colors.border, opacity: 0.4 }]} />
-              <InfoRow label="DNA Hash" value={result.dnaHash} />
-            </>
-          )}
-
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <InfoRow label="Last Checkup" value={result.lastCheckup || 'None'} />
 
           <TouchableOpacity
             onPress={() => router.push(`/dog/${result.id}`)}
@@ -180,24 +195,31 @@ const styles = StyleSheet.create({
   content: { paddingHorizontal: 18, gap: 16 },
   title: { fontSize: 26 },
   sub: { fontSize: 13, lineHeight: 20, marginBottom: 4 },
-  inputCard: { padding: 20, borderWidth: 1, gap: 14, alignItems: 'center' },
-  iconCircle: { width: 64, height: 64, borderRadius: 32, alignItems: 'center', justifyContent: 'center' },
-  inputLabel: { fontSize: 11, letterSpacing: 0.8, alignSelf: 'flex-start' },
-  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, paddingHorizontal: 14, paddingVertical: 14, gap: 10, width: '100%' },
-  textInput: { flex: 1, fontSize: 16, letterSpacing: 1, padding: 0 },
+  verifyActions: { gap: 16 },
+  scanBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', padding: 20, gap: 12 },
+  scanBtnText: { fontSize: 16 },
+  orRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
+  orLine: { flex: 1, height: 1 },
+  orText: { fontSize: 10, letterSpacing: 1 },
+  inputCard: { padding: 16, borderWidth: 1, gap: 12 },
+  inputWrap: { flexDirection: 'row', alignItems: 'center', borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, gap: 10 },
+  textInput: { flex: 1, fontSize: 16, letterSpacing: 1 },
   notFound: { padding: 28, borderWidth: 1, alignItems: 'center', gap: 8 },
   notFoundTitle: { fontSize: 20 },
   notFoundSub: { fontSize: 13, textAlign: 'center' },
   chipDisplay: { fontSize: 16, letterSpacing: 1 },
-  resultCard: { padding: 20, borderWidth: 1.5, gap: 0 },
-  resultHeader: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 14 },
-  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
+  resultCard: { padding: 20, borderWidth: 1.5 },
+  resultHeader: { marginBottom: 14 },
+  verifiedBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1, alignSelf: 'flex-start' },
   verifiedText: { fontSize: 11, letterSpacing: 0.8 },
-  stolenBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 12, paddingVertical: 6, borderWidth: 1 },
-  stolenText: { fontSize: 11, letterSpacing: 0.8 },
-  dogName: { fontSize: 26 },
+  dogName: { fontSize: 24 },
   dogBreed: { fontSize: 15, marginBottom: 6 },
-  divider: { height: 1, marginVertical: 4 },
-  viewBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderWidth: 1.5, gap: 8, marginTop: 8 },
+  divider: { height: 1, marginVertical: 8 },
+  viewBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderWidth: 1.5, gap: 8, marginTop: 12 },
   viewBtnText: { fontSize: 14 },
+  scannerContainer: { flex: 1, backgroundColor: '#000' },
+  scannerOverlay: { ...StyleSheet.absoluteFillObject, alignItems: 'center', justifyContent: 'space-between', paddingBottom: 40 },
+  closeScanner: { alignSelf: 'flex-end', marginRight: 20 },
+  scanFrame: { width: 250, height: 250, borderWidth: 2, borderColor: '#C9A84C', backgroundColor: 'transparent' },
+  scanText: { color: '#FFFFFF', fontSize: 16, textAlign: 'center', paddingHorizontal: 40 },
 });

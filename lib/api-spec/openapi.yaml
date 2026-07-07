@@ -1,22 +1,26 @@
 openapi: 3.1.0
 info:
-  # Do not change the title, if the title changes, the import paths will be broken
   title: Api
   version: 0.1.0
-  description: API specification
+  description: Zimbabwe Canine Registry API - Enhanced with Pedigree, Media, and Handshake Transfers
 servers:
   - url: /api
     description: Base API path
 tags:
   - name: health
-    description: Health operations
+  - name: dogs
+  - name: litters
+  - name: stats
+  - name: users
+  - name: transfers
+  - name: notifications
+  - name: media
+
 paths:
   /healthz:
     get:
       operationId: healthCheck
       tags: [health]
-      summary: Health check
-      description: Returns server health status
       responses:
         "200":
           description: Healthy
@@ -24,13 +28,414 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/HealthStatus"
+
+  /dogs:
+    get:
+      operationId: listDogs
+      tags: [dogs]
+      responses:
+        "200":
+          description: List of dogs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dog"
+    post:
+      operationId: createDog
+      tags: [dogs]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DogInput"
+      responses:
+        "201":
+          description: Dog registered
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dog"
+
+  /dogs/search:
+    get:
+      operationId: searchDogByMicrochip
+      tags: [dogs]
+      parameters:
+        - in: query
+          name: microchip
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dog"
+        "404":
+          description: Not found
+
+  /dogs/{id}:
+    get:
+      operationId: getDog
+      tags: [dogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dog"
+    patch:
+      operationId: updateDog
+      tags: [dogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DogUpdate"
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dog"
+
+  /dogs/{id}/pedigree:
+    get:
+      operationId: getDogPedigree
+      tags: [dogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+        - in: query
+          name: depth
+          schema:
+            type: integer
+            default: 3
+      responses:
+        "200":
+          description: Recursive pedigree tree
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/PedigreeNode"
+
+  /dogs/{id}/media:
+    get:
+      operationId: listDogMedia
+      tags: [media]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/MediaItem"
+    post:
+      operationId: uploadDogMedia
+      tags: [media]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/MediaInput"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MediaItem"
+
+  /transfers:
+    get:
+      operationId: listMyTransferRequests
+      tags: [transfers]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/TransferRequest"
+    post:
+      operationId: initiateTransfer
+      tags: [transfers]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TransferInitiate"
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferRequest"
+
+  /transfers/{id}/respond:
+    post:
+      operationId: respondToTransfer
+      tags: [transfers]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                action:
+                  type: string
+                  enum: [accept, reject, cancel]
+              required: [action]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TransferRequest"
+
+  /notifications:
+    get:
+      operationId: listNotifications
+      tags: [notifications]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Notification"
+
+  /notifications/{id}/read:
+    post:
+      operationId: markNotificationRead
+      tags: [notifications]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Marked as read
+
+  /stats/dashboard:
+    get:
+      operationId: getDashboardStats
+      tags: [stats]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DashboardStats"
+
+  /users/me:
+    get:
+      operationId: getMyProfile
+      tags: [users]
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+
 components:
   schemas:
     HealthStatus:
       type: object
       properties:
-        status:
-          type: string
-      required:
-        - status
+        status: { type: string }
+      required: [status]
 
+    Dog:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        breed: { type: string }
+        gender: { type: string, enum: [male, female] }
+        color: { type: string }
+        birthDate: { type: string }
+        microchipId: { type: string }
+        ownerId: { type: string }
+        ownerName: { type: string }
+        breederId: { type: string }
+        breederName: { type: string }
+        dameMicrochip: { type: ["string", "null"] }
+        sireMicrochip: { type: ["string", "null"] }
+        litterId: { type: ["string", "null"] }
+        vaccineHistory: { type: string }
+        sterilizationStatus: { type: string, enum: [Sterilized, Not Sterilized] }
+        registrationDate: { type: string }
+        isStolen: { type: boolean }
+        blockchainTxHash: { type: ["string", "null"] }
+        blockchainSyncStatus: { type: string, enum: [pending, confirmed, failed] }
+      required: [id, name, breed, gender, microchipId, ownerId, ownerName, breederId, breederName, registrationDate, isStolen, blockchainSyncStatus]
+
+    DogInput:
+      type: object
+      properties:
+        name: { type: string }
+        breed: { type: string }
+        gender: { type: string, enum: [male, female] }
+        color: { type: string }
+        birthDate: { type: string }
+        microchipId: { type: string }
+        dameMicrochip: { type: string }
+        sireMicrochip: { type: string }
+        litterId: { type: string }
+        vaccineHistory: { type: string }
+        sterilizationStatus: { type: string, enum: [Sterilized, Not Sterilized] }
+      required: [name, breed, gender, microchipId, birthDate]
+
+    DogUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        breed: { type: string }
+        color: { type: string }
+        weight: { type: string }
+        vaccineHistory: { type: string }
+        sterilizationStatus: { type: string, enum: [Sterilized, Not Sterilized] }
+
+    PedigreeNode:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        microchipId: { type: string }
+        breed: { type: string }
+        gender: { type: string }
+        sire: { $ref: "#/components/schemas/PedigreeNode" }
+        dame: { $ref: "#/components/schemas/PedigreeNode" }
+
+    MediaItem:
+      type: object
+      properties:
+        id: { type: string }
+        dogId: { type: string }
+        url: { type: string }
+        type: { type: string, enum: [image, document, dna_report] }
+        description: { type: ["string", "null"] }
+        createdAt: { type: string }
+      required: [id, dogId, url, type, createdAt]
+
+    MediaInput:
+      type: object
+      properties:
+        url: { type: string }
+        type: { type: string, enum: [image, document, dna_report] }
+        description: { type: string }
+      required: [url, type]
+
+    TransferRequest:
+      type: object
+      properties:
+        id: { type: string }
+        dogId: { type: string }
+        dogName: { type: string }
+        currentOwnerId: { type: string }
+        newOwnerId: { type: string }
+        newOwnerName: { type: string }
+        status: { type: string, enum: [pending, accepted, rejected, cancelled] }
+        requestedAt: { type: string }
+      required: [id, dogId, currentOwnerId, newOwnerId, status, requestedAt]
+
+    TransferInitiate:
+      type: object
+      properties:
+        dogId: { type: string }
+        newOwnerId: { type: string }
+        newOwnerName: { type: string }
+      required: [dogId, newOwnerId, newOwnerName]
+
+    Notification:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        message: { type: string }
+        isRead: { type: boolean }
+        type: { type: string }
+        link: { type: ["string", "null"] }
+        createdAt: { type: string }
+      required: [id, title, message, isRead, type, createdAt]
+
+    DashboardStats:
+      type: object
+      properties:
+        totalDogs: { type: integer }
+        totalLitters: { type: integer }
+        stolenReports: { type: integer }
+        sterilizedCount: { type: integer }
+        blockchainConfirmed: { type: integer }
+        registeredThisMonth: { type: integer }
+        recentActivity:
+          type: array
+          items:
+            $ref: "#/components/schemas/ActivityItem"
+      required: [totalDogs, totalLitters, stolenReports, sterilizedCount, blockchainConfirmed, registeredThisMonth, recentActivity]
+
+    ActivityItem:
+      type: object
+      properties:
+        id: { type: string }
+        type: { type: string }
+        description: { type: string }
+        timestamp: { type: string }
+        dogName: { type: ["string", "null"] }
+      required: [id, type, description, timestamp]
+
+    UserProfile:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        role: { type: string, enum: [owner, breeder, vet, regulator] }
+        registeredAt: { type: string }
+      required: [id, name, role, registeredAt]

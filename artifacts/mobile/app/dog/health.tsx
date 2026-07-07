@@ -1,180 +1,130 @@
 import React, { useState } from 'react';
 import { Alert, Platform, ScrollView, StyleSheet, Text, TextInput, TouchableOpacity, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router, useLocalSearchParams } from 'expo-router';
+import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks/useColors';
-import { useRegistry } from '@/context/RegistryContext';
+import { useRegistry, SterilizationStatus } from '@/context/RegistryContext';
 import { GoldButton } from '@/components/GoldButton';
-import type { SterilizationStatus } from '@/context/RegistryContext';
 
-export default function HealthUpdateScreen() {
+export default function UpdateHealthScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const { dogId } = useLocalSearchParams<{ dogId: string }>();
   const { dogs, user, updateHealthRecord } = useRegistry();
+
   const dog = dogs.find(d => d.id === dogId);
-  const topPt = Platform.OS === 'web' ? 67 : insets.top;
+
+  // Permission check
+  const isVet = user?.role === 'vet' || user?.role === 'regulator';
 
   const [vaccines, setVaccines] = useState(dog?.vaccineHistory ?? '');
-  const [sterilization, setSterilization] = useState<SterilizationStatus>(dog?.sterilizationStatus ?? 'Not Sterilized');
-  const [lastCheckup, setLastCheckup] = useState(dog?.lastCheckup ?? '');
-  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<SterilizationStatus>(dog?.sterilizationStatus ?? 'Not Sterilized');
+  const [lastCheckup, setLastCheckup] = useState(dog?.lastCheckup ?? new Date().toISOString().split('T')[0]);
 
-  const canUpdate = user.role === 'vet' || user.role === 'regulator';
+  if (!dog) return null;
 
-  if (!dog) {
+  if (!isVet) {
     return (
-      <View style={[styles.center, { backgroundColor: colors.background }]}>
-        <Text style={[{ color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>Dog not found</Text>
+      <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
+        <MaterialCommunityIcons name="shield-lock" size={64} color={colors.destructive} />
+        <Text style={[styles.errorTitle, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Access Denied</Text>
+        <Text style={[styles.errorSub, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
+          Only registered Veterinarians or Regulators can update health records.
+        </Text>
+        <GoldButton title="Go Back" onPress={() => router.back()} style={{ marginTop: 24 }} />
       </View>
     );
   }
 
-  const handleSave = async () => {
-    if (!canUpdate) {
-      Alert.alert('Access Denied', 'Only veterinarians and regulators can update health records.');
-      return;
-    }
-    setSaving(true);
-    try {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      updateHealthRecord(dog.id, vaccines, sterilization, lastCheckup || undefined);
-      Alert.alert('Health Record Updated', `${dog.name}'s health record has been updated on the ZCR ledger.`, [
-        { text: 'OK', onPress: () => router.back() },
-      ]);
-    } finally {
-      setSaving(false);
-    }
+  const handleUpdate = async () => {
+    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+    updateHealthRecord(dog.id, vaccines, status, lastCheckup);
+    Alert.alert('Success', 'Health record updated and synced to blockchain.');
+    router.back();
   };
 
   return (
     <ScrollView
       style={[styles.container, { backgroundColor: colors.background }]}
-      contentContainerStyle={[styles.content, { paddingTop: topPt + 16, paddingBottom: 120 }]}
-      showsVerticalScrollIndicator={false}
-      keyboardShouldPersistTaps="handled"
+      contentContainerStyle={{ padding: 20, paddingTop: insets.top + 20 }}
     >
-      <TouchableOpacity onPress={() => router.back()} style={styles.backRow}>
-        <Ionicons name="arrow-back" size={22} color={colors.primary} />
-        <Text style={[styles.backText, { color: colors.primary, fontFamily: 'Inter_500Medium' }]}>Back</Text>
-      </TouchableOpacity>
-
-      <Text style={[styles.title, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Update Health Record</Text>
-      <Text style={[styles.sub, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
-        {dog.name} · {dog.breed} · {dog.microchipId}
-      </Text>
-
-      {!canUpdate && (
-        <View style={[styles.warning, { backgroundColor: '#EF444415', borderColor: '#EF444430', borderRadius: colors.radius }]}>
-          <Ionicons name="warning" size={18} color={colors.destructive} />
-          <Text style={[styles.warningText, { color: colors.destructive, fontFamily: 'Inter_500Medium' }]}>
-            Your role ({user.role}) does not have permission to update health records. Switch to Veterinarian or Regulator role.
-          </Text>
-        </View>
-      )}
-
-      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-        <Text style={[styles.sectionLabel, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>VACCINE HISTORY</Text>
-        <TextInput
-          value={vaccines}
-          onChangeText={setVaccines}
-          placeholder="e.g. Rabies (2024-01-15), DHPP (2024-01-15)"
-          placeholderTextColor={colors.mutedForeground}
-          multiline
-          numberOfLines={4}
-          editable={canUpdate}
-          style={[styles.textarea, {
-            backgroundColor: colors.surfaceRaised,
-            borderColor: colors.border,
-            borderRadius: colors.radius - 4,
-            color: colors.foreground,
-            fontFamily: 'Inter_400Regular',
-            opacity: canUpdate ? 1 : 0.5,
-          }]}
-        />
+      <View style={styles.header}>
+        <TouchableOpacity onPress={() => router.back()}>
+          <Ionicons name="close" size={28} color={colors.foreground} />
+        </TouchableOpacity>
+        <Text style={[styles.title, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Update Health</Text>
+        <View style={{ width: 28 }} />
       </View>
 
-      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-        <Text style={[styles.sectionLabel, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>STERILIZATION STATUS</Text>
-        <View style={styles.row}>
+      <View style={[styles.dogCard, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
+        <Text style={[styles.dogName, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>{dog.name}</Text>
+        <Text style={[styles.dogMeta, { color: colors.mutedForeground }]}>{dog.microchipId}</Text>
+      </View>
+
+      <View style={styles.form}>
+        <Text style={[styles.label, { color: colors.mutedForeground }]}>VACCINATION HISTORY</Text>
+        <TextInput
+          style={[styles.textArea, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground, borderRadius: colors.radius }]}
+          multiline
+          numberOfLines={4}
+          value={vaccines}
+          onChangeText={setVaccines}
+          placeholder="Enter vaccines and dates..."
+          placeholderTextColor={colors.mutedForeground}
+        />
+
+        <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 20 }]}>STERILIZATION STATUS</Text>
+        <View style={styles.statusRow}>
           {(['Not Sterilized', 'Sterilized'] as SterilizationStatus[]).map(s => (
             <TouchableOpacity
               key={s}
-              disabled={!canUpdate}
-              onPress={() => setSterilization(s)}
-              style={[styles.statusBtn, {
-                flex: 1,
-                backgroundColor: sterilization === s
-                  ? (s === 'Sterilized' ? colors.success : colors.surfaceRaised)
-                  : colors.surfaceRaised,
-                borderColor: sterilization === s
-                  ? (s === 'Sterilized' ? colors.success : colors.primary)
-                  : colors.border,
-                borderRadius: colors.radius - 4,
-                opacity: canUpdate ? 1 : 0.5,
-              }]}
+              onPress={() => setStatus(s)}
+              style={[
+                styles.statusBtn,
+                {
+                  backgroundColor: status === s ? colors.primary : colors.card,
+                  borderColor: status === s ? colors.primary : colors.border,
+                  borderRadius: colors.radius
+                }
+              ]}
             >
-              <Text style={[styles.statusText, {
-                color: sterilization === s
-                  ? (s === 'Sterilized' ? '#fff' : colors.primary)
-                  : colors.mutedForeground,
-                fontFamily: 'Inter_600SemiBold',
-                fontSize: 13,
-              }]}>
-                {s}
-              </Text>
+              <Text style={{ color: status === s ? colors.primaryForeground : colors.foreground }}>{s}</Text>
             </TouchableOpacity>
           ))}
         </View>
-      </View>
 
-      <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-        <Text style={[styles.sectionLabel, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>LAST CHECKUP DATE</Text>
+        <Text style={[styles.label, { color: colors.mutedForeground, marginTop: 20 }]}>CHECKUP DATE</Text>
         <TextInput
+          style={[styles.input, { backgroundColor: colors.card, borderColor: colors.border, color: colors.foreground, borderRadius: colors.radius }]}
           value={lastCheckup}
           onChangeText={setLastCheckup}
           placeholder="YYYY-MM-DD"
           placeholderTextColor={colors.mutedForeground}
-          editable={canUpdate}
-          style={[styles.input, {
-            backgroundColor: colors.surfaceRaised,
-            borderColor: colors.border,
-            borderRadius: colors.radius - 4,
-            color: colors.foreground,
-            fontFamily: 'Inter_400Regular',
-            opacity: canUpdate ? 1 : 0.5,
-          }]}
         />
-      </View>
 
-      <GoldButton
-        title="Save Health Record"
-        onPress={handleSave}
-        loading={saving}
-        disabled={!canUpdate}
-        size="lg"
-      />
+        <View style={{ marginTop: 40 }}>
+          <GoldButton title="Save Health Record" onPress={handleUpdate} />
+        </View>
+      </View>
     </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  center: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  content: { paddingHorizontal: 18, gap: 14 },
-  backRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  backText: { fontSize: 15 },
-  title: { fontSize: 24 },
-  sub: { fontSize: 13, marginBottom: 4 },
-  warning: { flexDirection: 'row', alignItems: 'flex-start', padding: 14, borderWidth: 1, gap: 10 },
-  warningText: { flex: 1, fontSize: 13, lineHeight: 20 },
-  section: { padding: 16, borderWidth: 1, gap: 10 },
-  sectionLabel: { fontSize: 11, letterSpacing: 0.8 },
-  textarea: { borderWidth: 1, padding: 12, fontSize: 13, minHeight: 100, textAlignVertical: 'top' },
-  input: { borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14 },
-  row: { flexDirection: 'row', gap: 10 },
-  statusBtn: { alignItems: 'center', justifyContent: 'center', paddingVertical: 12, borderWidth: 1 },
-  statusText: {},
+  header: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 30 },
+  title: { fontSize: 20 },
+  dogCard: { padding: 16, borderWidth: 1, marginBottom: 24 },
+  dogName: { fontSize: 18 },
+  dogMeta: { fontSize: 12, marginTop: 4 },
+  form: { flex: 1 },
+  label: { fontSize: 11, letterSpacing: 1, marginBottom: 8 },
+  input: { borderWidth: 1, padding: 14, fontSize: 16 },
+  textArea: { borderWidth: 1, padding: 14, fontSize: 16, minHeight: 100, textAlignVertical: 'top' },
+  statusRow: { flexDirection: 'row', gap: 10 },
+  statusBtn: { flex: 1, padding: 14, borderWidth: 1, alignItems: 'center' },
+  errorTitle: { fontSize: 24, marginTop: 20 },
+  errorSub: { fontSize: 16, textAlign: 'center', marginTop: 10 },
 });

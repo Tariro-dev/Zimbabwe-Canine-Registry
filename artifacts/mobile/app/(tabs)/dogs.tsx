@@ -19,13 +19,14 @@ const FILTERS: { key: Filter; label: string }[] = [
 export default function DogsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { dogs, user } = useRegistry();
+  const { dogs, user, loading } = useRegistry();
   const [query, setQuery] = useState('');
   const [filter, setFilter] = useState<Filter>('all');
 
   const topPt = Platform.OS === 'web' ? 67 : insets.top;
 
   const filtered = useMemo(() => {
+    if (!user) return [];
     let list = dogs;
     if (filter === 'mine') list = list.filter(d => d.ownerId === user.id || d.breederId === user.id);
     if (filter === 'stolen') list = list.filter(d => d.isStolen);
@@ -41,7 +42,9 @@ export default function DogsScreen() {
       );
     }
     return list.sort((a, b) => b.registrationDate.localeCompare(a.registrationDate));
-  }, [dogs, filter, query, user.id]);
+  }, [dogs, filter, query, user?.id]);
+
+  if (loading || !user) return null;
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>

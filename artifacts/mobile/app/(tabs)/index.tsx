@@ -11,7 +11,9 @@ import { DogCard } from '@/components/DogCard';
 export default function DashboardScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
-  const { dogs, litters, user } = useRegistry();
+  const { dogs, litters, user, loading } = useRegistry();
+
+  if (loading || !user) return null;
 
   const thisMonth = dogs.filter(d => {
     const reg = new Date(d.registrationDate);
