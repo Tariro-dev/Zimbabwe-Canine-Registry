@@ -71,6 +71,7 @@ paths:
             type: string
       responses:
         "200":
+          description: Dog found
           content:
             application/json:
               schema:
@@ -90,6 +91,7 @@ paths:
             type: string
       responses:
         "200":
+          description: Dog details
           content:
             application/json:
               schema:
@@ -111,6 +113,7 @@ paths:
               $ref: "#/components/schemas/DogUpdate"
       responses:
         "200":
+          description: Dog updated
           content:
             application/json:
               schema:
@@ -151,6 +154,7 @@ paths:
             type: string
       responses:
         "200":
+          description: List of media items
           content:
             application/json:
               schema:
@@ -174,6 +178,7 @@ paths:
               $ref: "#/components/schemas/MediaInput"
       responses:
         "201":
+          description: Media uploaded
           content:
             application/json:
               schema:
@@ -185,6 +190,7 @@ paths:
       tags: [transfers]
       responses:
         "200":
+          description: List of transfer requests
           content:
             application/json:
               schema:
@@ -202,6 +208,7 @@ paths:
               $ref: "#/components/schemas/TransferInitiate"
       responses:
         "201":
+          description: Transfer initiated
           content:
             application/json:
               schema:
@@ -230,6 +237,7 @@ paths:
               required: [action]
       responses:
         "200":
+          description: Transfer responded to
           content:
             application/json:
               schema:
@@ -241,6 +249,7 @@ paths:
       tags: [notifications]
       responses:
         "200":
+          description: List of notifications
           content:
             application/json:
               schema:
@@ -268,6 +277,7 @@ paths:
       tags: [stats]
       responses:
         "200":
+          description: Dashboard statistics
           content:
             application/json:
               schema:
@@ -279,10 +289,177 @@ paths:
       tags: [users]
       responses:
         "200":
+          description: User profile
           content:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserProfile"
+
+  /litters:
+    get:
+      operationId: listLitters
+      tags: [litters]
+      responses:
+        "200":
+          description: List of litters
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Litter"
+    post:
+      operationId: createLitter
+      tags: [litters]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LitterInput"
+      responses:
+        "201":
+          description: Litter created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Litter"
+
+  /litters/{id}:
+    get:
+      operationId: getLitter
+      tags: [litters]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Litter details
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Litter"
+    delete:
+      operationId: deleteLitter
+      tags: [litters]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Litter deleted
+
+  /litters/{id}/puppies:
+    post:
+      operationId: registerPuppies
+      tags: [litters]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PuppyRegistrationInput"
+      responses:
+        "201":
+          description: Puppies registered
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dog"
+
+  /dogs/{id}/stolen:
+    post:
+      operationId: toggleDogStolen
+      tags: [dogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Stolen status toggled
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dog"
+
+  /dogs/{id}/health:
+    post:
+      operationId: updateDogHealth
+      tags: [dogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/HealthUpdate"
+      responses:
+        "200":
+          description: Health record updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dog"
+
+  /dogs/recent:
+    get:
+      operationId: listRecentDogs
+      tags: [dogs]
+      responses:
+        "200":
+          description: List of recent dogs
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Dog"
+
+  /dogs/{id}/transfer:
+    post:
+      operationId: transferDogOwnership
+      tags: [dogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OwnershipTransfer"
+      responses:
+        "200":
+          description: Ownership transferred
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Dog"
 
 components:
   schemas:
@@ -315,7 +492,21 @@ components:
         isStolen: { type: boolean }
         blockchainTxHash: { type: ["string", "null"] }
         blockchainSyncStatus: { type: string, enum: [pending, confirmed, failed] }
-      required: [id, name, breed, gender, microchipId, ownerId, ownerName, breederId, breederName, registrationDate, isStolen, blockchainSyncStatus]
+        lastCheckup: { type: ["string", "null"] }
+        dnaHash: { type: ["string", "null"] }
+        weight: { type: ["string", "null"] }
+        blockchainConfirmedAt: { type: ["string", "null"] }
+        breederCertification:
+          $ref: "#/components/schemas/BreederCertification"
+      required: [id, name, breed, gender, microchipId, ownerId, ownerName, breederId, breederName, registrationDate, isStolen, blockchainSyncStatus, vaccineHistory, sterilizationStatus]
+
+    BreederCertification:
+      type: object
+      properties:
+        certNumber: { type: string }
+        issuedDate: { type: string }
+        status: { type: string, enum: [active, suspended, expired] }
+      required: [certNumber, issuedDate, status]
 
     DogInput:
       type: object
@@ -331,6 +522,8 @@ components:
         litterId: { type: string }
         vaccineHistory: { type: string }
         sterilizationStatus: { type: string, enum: [Sterilized, Not Sterilized] }
+        dnaHash: { type: string }
+        weight: { type: string }
       required: [name, breed, gender, microchipId, birthDate]
 
     DogUpdate:
@@ -342,6 +535,21 @@ components:
         weight: { type: string }
         vaccineHistory: { type: string }
         sterilizationStatus: { type: string, enum: [Sterilized, Not Sterilized] }
+
+    HealthUpdate:
+      type: object
+      properties:
+        vaccineHistory: { type: string }
+        sterilizationStatus: { type: string, enum: [Sterilized, Not Sterilized] }
+        lastCheckup: { type: string }
+      required: [vaccineHistory, sterilizationStatus]
+
+    OwnershipTransfer:
+      type: object
+      properties:
+        newOwnerName: { type: string }
+        newOwnerId: { type: string }
+      required: [newOwnerName, newOwnerId]
 
     PedigreeNode:
       type: object
@@ -438,4 +646,44 @@ components:
         name: { type: string }
         role: { type: string, enum: [owner, breeder, vet, regulator] }
         registeredAt: { type: string }
+        kennelName: { type: ["string", "null"] }
+        licenseNumber: { type: ["string", "null"] }
       required: [id, name, role, registeredAt]
+
+    Litter:
+      type: object
+      properties:
+        id: { type: string }
+        dameMicrochip: { type: string }
+        sireMicrochip: { type: string }
+        expectedBirthDate: { type: string }
+        registeredAt: { type: string }
+        breederId: { type: string }
+        breederName: { type: string }
+      required: [id, dameMicrochip, sireMicrochip, expectedBirthDate, registeredAt, breederId, breederName]
+
+    LitterInput:
+      type: object
+      properties:
+        dameMicrochip: { type: string }
+        sireMicrochip: { type: string }
+        expectedBirthDate: { type: string }
+      required: [dameMicrochip, sireMicrochip, expectedBirthDate]
+
+    PuppyRegistrationInput:
+      type: object
+      properties:
+        puppies:
+          type: array
+          items:
+            $ref: "#/components/schemas/PuppyInput"
+      required: [puppies]
+
+    PuppyInput:
+      type: object
+      properties:
+        name: { type: string }
+        gender: { type: string, enum: [male, female] }
+        color: { type: string }
+        microchipId: { type: string }
+      required: [name, gender, color, microchipId]
