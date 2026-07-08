@@ -18,11 +18,14 @@ export default function AuditLog() {
   const { data: stats, isLoading } = useGetDashboardStats();
   const [filter, setFilter] = React.useState('');
 
-  const activities = stats?.recentActivity.filter(a =>
-    a.description.toLowerCase().includes(filter.toLowerCase()) ||
-    a.dogName?.toLowerCase().includes(filter.toLowerCase()) ||
-    a.microchipId?.toLowerCase().includes(filter.toLowerCase())
-  );
+  const activities = React.useMemo(() => {
+    if (!stats?.recentActivity || !Array.isArray(stats.recentActivity)) return [];
+    return stats.recentActivity.filter(a =>
+      a.description.toLowerCase().includes(filter.toLowerCase()) ||
+      a.dogName?.toLowerCase().includes(filter.toLowerCase()) ||
+      a.microchipId?.toLowerCase().includes(filter.toLowerCase())
+    );
+  }, [stats?.recentActivity, filter]);
 
   if (isLoading) return <div className="p-8 text-center">Loading registry audit logs...</div>;
 

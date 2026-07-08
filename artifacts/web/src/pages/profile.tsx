@@ -67,7 +67,7 @@ export default function Profile() {
             <span className="text-lg text-muted-foreground capitalize font-medium">{profile.role}</span>
           </div>
           <p className="text-sm text-muted-foreground mt-1">
-            Member since {format(new Date(profile.registeredAt), 'MMMM yyyy')}
+            Member since {profile.registeredAt ? format(new Date(profile.registeredAt), 'MMMM yyyy') : 'Unknown'}
           </p>
         </div>
       </div>

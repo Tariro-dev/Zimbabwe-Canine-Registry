@@ -102,7 +102,7 @@ export default function Dashboard() {
                       {dog.microchipId}
                     </div>
                     <span className="text-xs text-muted-foreground mt-1">
-                      {format(new Date(dog.registrationDate), 'MMM d, yyyy')}
+                      {dog.registrationDate ? format(new Date(dog.registrationDate), 'MMM d, yyyy') : 'Unknown'}
                     </span>
                   </div>
                 </div>
@@ -150,7 +150,9 @@ export default function Dashboard() {
                   <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-lg border border-border bg-card shadow-sm">
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-semibold text-sm capitalize">{activity.type.replace('_', ' ')}</span>
-                      <span className="text-xs text-muted-foreground font-mono">{format(new Date(activity.timestamp), 'HH:mm')}</span>
+                      <span className="text-xs text-muted-foreground font-mono">
+                        {activity.timestamp ? format(new Date(activity.timestamp), 'HH:mm') : '--:--'}
+                      </span>
                     </div>
                     <p className="text-sm text-muted-foreground">{activity.description}</p>
                     {activity.dogName && (
