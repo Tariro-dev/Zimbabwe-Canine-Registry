@@ -294,6 +294,22 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/UserProfile"
+    patch:
+      operationId: updateMyProfile
+      tags: [users]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserProfileUpdate"
+      responses:
+        "200":
+          description: Profile updated
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
 
   /litters:
     get:
@@ -649,6 +665,13 @@ components:
         kennelName: { type: ["string", "null"] }
         licenseNumber: { type: ["string", "null"] }
       required: [id, name, role, registeredAt]
+
+    UserProfileUpdate:
+      type: object
+      properties:
+        name: { type: string }
+        kennelName: { type: string }
+        licenseNumber: { type: string }
 
     Litter:
       type: object
