@@ -12,7 +12,7 @@ export default function DogsList() {
   const [search, setSearch] = React.useState('');
 
   const filteredDogs = React.useMemo(() => {
-    if (!dogs) return [];
+    if (!Array.isArray(dogs)) return [];
     if (!search) return dogs;
     const lower = search.toLowerCase();
     return dogs.filter(d => 

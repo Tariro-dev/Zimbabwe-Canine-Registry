@@ -60,10 +60,10 @@ export default function LittersList() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {litters?.map(litter => (
+          {Array.isArray(litters) && litters.map(litter => (
             <LitterCard key={litter.id} litter={litter} />
           ))}
-          {litters?.length === 0 && (
+          {(!Array.isArray(litters) || litters.length === 0) && (
             <div className="col-span-full py-12 text-center border border-dashed rounded-lg bg-card/50">
               <p className="text-muted-foreground">No active litters found.</p>
             </div>
