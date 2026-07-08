@@ -17,7 +17,7 @@ export function MediaGallery({ dogId }: { dogId: string }) {
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-          {media?.map((item: MediaItem) => (
+          {Array.isArray(media) && media.map((item: MediaItem) => (
             <div key={item.id} className="group relative aspect-square rounded-lg border border-border overflow-hidden bg-muted hover:ring-2 hover:ring-primary transition-all cursor-pointer">
               {item.type === 'image' ? (
                 <img src={item.url} alt={item.description || ''} className="object-cover w-full h-full" />

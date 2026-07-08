@@ -86,7 +86,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-4">
-              {recentDogs?.map((dog) => (
+              {Array.isArray(recentDogs) && recentDogs.map((dog) => (
                 <div key={dog.id} className="flex items-center justify-between p-4 border border-border rounded-lg bg-card/50 hover:bg-muted/50 transition-colors">
                   <div className="flex flex-col">
                     <Link href={`/dogs/${dog.id}`} className="font-semibold text-primary hover:underline">
@@ -140,7 +140,7 @@ export default function Dashboard() {
           </CardHeader>
           <CardContent>
             <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
-              {stats.recentActivity.map((activity, i) => (
+              {Array.isArray(stats.recentActivity) && stats.recentActivity.map((activity, i) => (
                 <div key={activity.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
                   <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-muted text-muted-foreground shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10">
                     <ActivityIcon type={activity.type} />
