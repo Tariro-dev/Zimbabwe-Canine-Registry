@@ -20,6 +20,8 @@ const formSchema = z.object({
   microchipId: z.string().min(1, "Microchip ID is required"),
   dameMicrochip: z.string().optional(),
   sireMicrochip: z.string().optional(),
+  dnaHash: z.string().optional(),
+  weight: z.string().optional(),
   vaccineHistory: z.string().optional(),
   sterilizationStatus: z.enum(["Sterilized", "Not Sterilized"]).optional(),
 });
@@ -39,6 +41,8 @@ export default function RegisterDog() {
       microchipId: "",
       dameMicrochip: "",
       sireMicrochip: "",
+      dnaHash: "",
+      weight: "",
       vaccineHistory: "Up to date",
       sterilizationStatus: "Not Sterilized"
     }
@@ -146,6 +150,28 @@ export default function RegisterDog() {
                   <FormItem>
                     <FormLabel>Color / Markings</FormLabel>
                     <FormControl><Input {...field} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="dnaHash"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>DNA Hash (optional)</FormLabel>
+                    <FormControl><Input {...field} className="font-mono" placeholder="SHA256:..." /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="weight"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Weight (kg)</FormLabel>
+                    <FormControl><Input {...field} placeholder="e.g. 32" /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
