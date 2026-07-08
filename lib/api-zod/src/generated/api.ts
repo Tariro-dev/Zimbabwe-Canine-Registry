@@ -369,6 +369,22 @@ export const GetMyProfileResponse = zod.object({
 })
 
 
+export const UpdateMyProfileBody = zod.object({
+  "name": zod.string().optional(),
+  "kennelName": zod.string().optional(),
+  "licenseNumber": zod.string().optional()
+})
+
+export const UpdateMyProfileResponse = zod.object({
+  "id": zod.string(),
+  "name": zod.string(),
+  "role": zod.enum(['owner', 'breeder', 'vet', 'regulator']),
+  "registeredAt": zod.string(),
+  "kennelName": zod.string().nullish(),
+  "licenseNumber": zod.string().nullish()
+})
+
+
 export const ListLittersResponseItem = zod.object({
   "id": zod.string(),
   "dameMicrochip": zod.string(),

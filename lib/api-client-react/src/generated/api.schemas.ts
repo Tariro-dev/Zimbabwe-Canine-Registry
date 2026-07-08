@@ -275,6 +275,12 @@ export interface UserProfile {
   licenseNumber?: string | null;
 }
 
+export interface UserProfileUpdate {
+  name?: string;
+  kennelName?: string;
+  licenseNumber?: string;
+}
+
 export interface Litter {
   id: string;
   dameMicrochip: string;

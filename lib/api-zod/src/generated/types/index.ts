@@ -43,3 +43,4 @@ export * from './transferRequest';
 export * from './transferRequestStatus';
 export * from './userProfile';
 export * from './userProfileRole';
+export * from './userProfileUpdate';

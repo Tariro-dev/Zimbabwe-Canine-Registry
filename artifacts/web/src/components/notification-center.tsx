@@ -18,7 +18,9 @@ export function NotificationCenter() {
   const markRead = useMarkNotificationRead();
   const queryClient = useQueryClient();
 
-  const unreadCount = notifications?.filter(n => !n.isRead).length || 0;
+  const unreadCount = Array.isArray(notifications)
+    ? notifications.filter(n => !n.isRead).length
+    : 0;
 
   const handleRead = (id: string) => {
     markRead.mutate({ id }, {
@@ -43,10 +45,10 @@ export function NotificationCenter() {
       <DropdownMenuContent align="end" className="w-80">
         <div className="p-3 font-semibold border-b border-border">Notifications</div>
         <div className="max-h-[400px] overflow-y-auto">
-          {notifications?.length === 0 ? (
+          {!Array.isArray(notifications) || notifications.length === 0 ? (
             <div className="p-8 text-center text-sm text-muted-foreground">All caught up!</div>
           ) : (
-            notifications?.map((n) => (
+            notifications.map((n) => (
               <DropdownMenuItem
                 key={n.id}
                 className={`p-4 cursor-pointer flex gap-3 items-start border-b border-border last:border-0 ${n.isRead ? 'opacity-60' : 'bg-primary/5'}`}
