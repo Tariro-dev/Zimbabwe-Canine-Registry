@@ -17,6 +17,7 @@
       "supportsTablet": false
     },
     "android": {
+      "package": "com.zimbabwecanineregistry.mobile",
       "backgroundColor": "#0D0D0D"
     },
     "web": {
@@ -35,6 +36,11 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "da4f510b-3cdf-43ad-94a8-2b6a0b90304c"
+      }
     }
   }
 }
