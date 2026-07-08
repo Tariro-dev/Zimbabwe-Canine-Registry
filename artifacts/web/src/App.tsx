@@ -9,6 +9,8 @@ import Dashboard from '@/pages/dashboard';
 import DogsList from '@/pages/dogs/list';
 import DogDetail from '@/pages/dogs/detail';
 import RegisterDog from '@/pages/dogs/register';
+import UpdateHealth from '@/pages/dogs/health';
+import TransferOwnership from '@/pages/dogs/transfer';
 import Verify from '@/pages/verify';
 import LittersList from '@/pages/litters/list';
 import Profile from '@/pages/profile';
@@ -36,6 +38,12 @@ function Router() {
         </Route>
         <Route path="/dogs/:id/certificate">
           {(params) => <DogCertificate id={params.id} />}
+        </Route>
+        <Route path="/dogs/:id/health">
+          {(params) => <UpdateHealth id={params.id} />}
+        </Route>
+        <Route path="/dogs/:id/transfer">
+          {(params) => <TransferOwnership id={params.id} />}
         </Route>
         <Route path="/register" component={RegisterDog} />
         <Route path="/verify" component={Verify} />

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useGetDog, useToggleDogStolen, getGetDogQueryKey, Dog } from '@workspace/api-client-react';
+import { useGetDog, useToggleDogStolen, getGetDogQueryKey, Dog, useGetMyProfile } from '@workspace/api-client-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -17,6 +17,7 @@ import { Link } from 'wouter';
 
 export default function DogDetail({ id }: { id: string }) {
   const { data: dog, isLoading } = useGetDog(id);
+  const { data: profile } = useGetMyProfile();
   const toggleStolen = useToggleDogStolen();
   const queryClient = useQueryClient();
 
@@ -27,6 +28,10 @@ export default function DogDetail({ id }: { id: string }) {
   if (!dog) {
     return <div className="p-8 text-center text-destructive">Dog not found.</div>;
   }
+
+  const isOwner = dog.ownerId === profile?.id;
+  const isVet = profile?.role === 'vet' || profile?.role === 'regulator';
+  const isRegulator = profile?.role === 'regulator';
 
   const handleToggleStolen = () => {
     toggleStolen.mutate({ id }, {
@@ -53,14 +58,20 @@ export default function DogDetail({ id }: { id: string }) {
           <Link href={`/dogs/${dog.id}/certificate`}>
             <Button variant="outline"><FileText className="w-4 h-4 mr-2"/> View Certificate</Button>
           </Link>
-          <Button
-            variant={dog.isStolen ? "outline" : "destructive"} 
-            onClick={handleToggleStolen}
-            disabled={toggleStolen.isPending}
-          >
-            {dog.isStolen ? 'Mark as Safe' : 'Report Stolen'}
-          </Button>
-          <Button variant="outline">Transfer Ownership</Button>
+          {(isOwner || isRegulator) && (
+            <Button
+              variant={dog.isStolen ? "outline" : "destructive"}
+              onClick={handleToggleStolen}
+              disabled={toggleStolen.isPending}
+            >
+              {dog.isStolen ? 'Mark as Safe' : 'Report Stolen'}
+            </Button>
+          )}
+          {(isOwner || isRegulator) && (
+            <Link href={`/dogs/${dog.id}/transfer`}>
+              <Button variant="outline">Transfer Ownership</Button>
+            </Link>
+          )}
         </div>
       </div>
 
@@ -129,9 +140,13 @@ export default function DogDetail({ id }: { id: string }) {
             {dog.lastCheckup && <DetailRow label="Last Checkup" value={format(new Date(dog.lastCheckup), 'PP')} />}
             {dog.dnaHash && <DetailRow label="DNA Hash" value={dog.dnaHash} mono className="text-xs" />}
             
-            <div className="pt-4 mt-2 border-t border-border">
-              <Button variant="outline" size="sm" className="w-full">Update Health Record</Button>
-            </div>
+            {isVet && (
+              <div className="pt-4 mt-2 border-t border-border">
+                <Link href={`/dogs/${dog.id}/health`}>
+                  <Button variant="outline" size="sm" className="w-full">Update Health Record</Button>
+                </Link>
+              </div>
+            )}
           </CardContent>
         </Card>
 
