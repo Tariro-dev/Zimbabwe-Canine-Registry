@@ -46,7 +46,7 @@ export default function TransferOwnershipScreen() {
             setSaving(true);
             try {
               await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-              transferOwnership(dog.id, newOwnerName.trim(), newOwnerId.trim());
+              await transferOwnership(dog.id, newOwnerName.trim(), newOwnerId.trim());
               Alert.alert('Transfer Complete', `${dog.name} has been transferred to ${newOwnerName}. The ledger has been updated.`, [
                 { text: 'OK', onPress: () => router.back() },
               ]);
