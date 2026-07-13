@@ -8,14 +8,14 @@ import { rm } from "node:fs/promises";
 // Plugins (e.g. 'esbuild-plugin-pino') may use `require` to resolve dependencies
 globalThis.require = createRequire(import.meta.url);
 
-const artifactDir = path.dirname(fileURLToPath(import.meta.url));
+const appDir = path.dirname(fileURLToPath(import.meta.url));
 
 async function buildAll() {
-  const distDir = path.resolve(artifactDir, "dist");
+  const distDir = path.resolve(appDir, "dist");
   await rm(distDir, { recursive: true, force: true });
 
   await esbuild({
-    entryPoints: [path.resolve(artifactDir, "src/index.ts")],
+    entryPoints: [path.resolve(appDir, "src/index.ts")],
     platform: "node",
     bundle: true,
     format: "esm",
