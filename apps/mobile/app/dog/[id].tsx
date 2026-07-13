@@ -220,7 +220,7 @@ export default function DogDetailScreen() {
           style: dog.isStolen ? 'default' : 'destructive',
           onPress: async () => {
             await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
-            toggleStolen(dog.id);
+            await toggleStolen(dog.id);
           },
         },
       ]

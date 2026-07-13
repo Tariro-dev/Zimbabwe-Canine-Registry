@@ -60,13 +60,13 @@ export default function ProfileScreen() {
   const handleSave = async () => {
     if (!name.trim()) { Alert.alert('Error', 'Name cannot be empty.'); return; }
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    updateUser({ name: name.trim(), kennelName: kennelName.trim() || undefined, licenseNumber: licenseNumber.trim() || undefined });
+    await updateUser({ name: name.trim(), kennelName: kennelName.trim() || undefined, licenseNumber: licenseNumber.trim() || undefined });
     setEditing(false);
   };
 
   const handleRoleChange = async (role: Role) => {
     await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
-    updateUser({ role });
+    await updateUser({ role });
   };
 
   return (
