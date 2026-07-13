@@ -247,7 +247,7 @@ export default function Landing() {
 
             <div className="space-y-8">
               <motion.div {...fadeInUp}>
-                <p className="text-primary font-mono text-sm tracking-[0.3em] uppercase mb-4">Establishing Credibility</motion.p>
+                <p className="text-primary font-mono text-sm tracking-[0.3em] uppercase mb-4">Establishing Credibility</p>
                 <h2 className="text-4xl md:text-5xl font-bold mb-6 leading-tight">Why Zimbabwe Canine Registry?</h2>
                 <p className="text-lg text-muted-foreground leading-relaxed">
                   We are building a digital infrastructure that protects the integrity of Zimbabwean canine breeds
