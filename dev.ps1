@@ -7,5 +7,5 @@ if (Test-Path .env) {
     }
 }
 
-Write-Host "Starting Dynamic System (Backend + Frontend)..." -ForegroundColor Gold
+Write-Host "Starting Dynamic System (Backend + Frontend)..." -ForegroundColor Yellow
 pnpm --filter @workspace/api-server --filter @workspace/web dev --parallel
