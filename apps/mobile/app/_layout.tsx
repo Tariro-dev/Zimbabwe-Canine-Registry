@@ -18,6 +18,14 @@ import { RegistryProvider, useRegistry } from '@/context/RegistryContext';
 import { useColors } from '@/hooks/useColors';
 import * as LocalAuthentication from 'expo-local-authentication';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import Constants from 'expo-constants';
+import { setBaseUrl } from '@workspace/api-client-react';
+
+// Initialize API client base URL
+const debuggerHost = Constants.expoConfig?.hostUri;
+const localhost = debuggerHost?.split(':')[0] || 'localhost';
+const apiUrl = `http://${localhost}:5000`;
+setBaseUrl(apiUrl);
 
 SplashScreen.preventAutoHideAsync();
 
