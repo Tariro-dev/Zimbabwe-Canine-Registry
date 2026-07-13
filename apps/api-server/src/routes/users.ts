@@ -15,10 +15,12 @@ router.get("/users/me", async (_req, res) => {
     await db.insert(usersTable).values({
       id: CURRENT_USER_ID,
       name: "Thamsanqa Zwana",
+      email: "thamsanqa@zwanakennels.co.zw",
+      passwordHash: "mock-hash",
       role: "breeder",
       kennelName: "Zwana Kennels",
       licenseNumber: "ZCR-BR-2024-001",
-      registeredAt: "2024-01-15",
+      registeredAt: new Date("2024-01-15"),
     });
     const seeded = await db.select().from(usersTable).where(eq(usersTable.id, CURRENT_USER_ID));
     const u = seeded[0]!;
