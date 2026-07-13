@@ -2,8 +2,14 @@ import { Route, Switch, Router as WouterRouter } from 'wouter';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { Toaster } from '@/components/ui/toaster';
 import { TooltipProvider } from '@/components/ui/tooltip';
+import * as React from 'react';
+
 import NotFound from '@/pages/not-found';
 import { AppLayout } from '@/components/layout/app-layout';
+import Landing from '@/pages/landing';
+import Login from '@/pages/auth/login';
+import Register from '@/pages/auth/register';
+import { SplashScreen } from '@/components/splash-screen';
 
 import Dashboard from '@/pages/dashboard';
 import DogsList from '@/pages/dogs/list';
@@ -29,41 +35,64 @@ const queryClient = new QueryClient({
 
 function Router() {
   return (
-    <AppLayout>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/dogs" component={DogsList} />
-        <Route path="/dogs/:id">
-          {(params) => <DogDetail id={params.id} />}
-        </Route>
-        <Route path="/dogs/:id/certificate">
-          {(params) => <DogCertificate id={params.id} />}
-        </Route>
-        <Route path="/dogs/:id/health">
-          {(params) => <UpdateHealth id={params.id} />}
-        </Route>
-        <Route path="/dogs/:id/transfer">
-          {(params) => <TransferOwnership id={params.id} />}
-        </Route>
-        <Route path="/register" component={RegisterDog} />
-        <Route path="/verify" component={Verify} />
-        <Route path="/litters" component={LittersList} />
-        <Route path="/regulator" component={RegulatorDashboard} />
-        <Route path="/audit-log" component={AuditLog} />
-        <Route path="/profile" component={Profile} />
-        <Route component={NotFound} />
-      </Switch>
-    </AppLayout>
+    <Switch>
+      <Route path="/" component={Landing} />
+      <Route path="/login" component={Login} />
+      <Route path="/register" component={Register} />
+
+      {/* Dashboard Routes wrapped in AppLayout */}
+      <Route path="/dashboard">
+        <AppLayout><Dashboard /></AppLayout>
+      </Route>
+      <Route path="/dogs">
+        <AppLayout><DogsList /></AppLayout>
+      </Route>
+      <Route path="/dogs/:id">
+        {(params) => <AppLayout><DogDetail id={params.id} /></AppLayout>}
+      </Route>
+      <Route path="/dogs/:id/certificate">
+        {(params) => <AppLayout><DogCertificate id={params.id} /></AppLayout>}
+      </Route>
+      <Route path="/dogs/:id/health">
+        {(params) => <AppLayout><UpdateHealth id={params.id} /></AppLayout>}
+      </Route>
+      <Route path="/dogs/:id/transfer">
+        {(params) => <AppLayout><TransferOwnership id={params.id} /></AppLayout>}
+      </Route>
+      <Route path="/verify">
+        <AppLayout><Verify /></AppLayout>
+      </Route>
+      <Route path="/litters">
+        <AppLayout><LittersList /></AppLayout>
+      </Route>
+      <Route path="/regulator">
+        <AppLayout><RegulatorDashboard /></AppLayout>
+      </Route>
+      <Route path="/audit-log">
+        <AppLayout><AuditLog /></AppLayout>
+      </Route>
+      <Route path="/profile">
+        <AppLayout><Profile /></AppLayout>
+      </Route>
+
+      <Route component={NotFound} />
+    </Switch>
   );
 }
 
 function App() {
+  const [showSplash, setShowSplash] = React.useState(true);
+
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-          <Router />
-        </WouterRouter>
+        {showSplash ? (
+          <SplashScreen onComplete={() => setShowSplash(false)} />
+        ) : (
+          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+            <Router />
+          </WouterRouter>
+        )}
         <Toaster />
       </TooltipProvider>
     </QueryClientProvider>

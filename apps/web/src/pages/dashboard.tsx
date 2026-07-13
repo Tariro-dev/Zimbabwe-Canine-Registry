@@ -2,7 +2,6 @@ import * as React from 'react';
 import { 
   useGetDashboardStats, 
   useListRecentDogs,
-  ActivityItem
 } from '@workspace/api-client-react';
 import { 
   Card, 
@@ -18,12 +17,17 @@ import {
   ShieldCheck, 
   AlertTriangle, 
   Activity, 
-  Syringe, 
-  TrendingUp, 
-  Link as LinkIcon 
+  TrendingUp,
+  Link as LinkIcon,
+  PlusCircle,
+  FileCheck,
+  Zap,
+  ChevronRight,
+  Dog
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
+import { motion } from 'framer-motion';
 
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
@@ -31,11 +35,11 @@ export default function Dashboard() {
 
   if (statsLoading || dogsLoading) {
     return (
-      <div className="space-y-6 animate-pulse">
-        <div className="h-8 w-48 bg-muted rounded"></div>
+      <div className="space-y-8 animate-pulse">
+        <div className="h-32 w-full bg-muted rounded-3xl"></div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i}><CardContent className="h-28"></CardContent></Card>
+            <div key={i} className="h-32 bg-muted rounded-3xl" />
           ))}
         </div>
       </div>
@@ -45,161 +49,181 @@ export default function Dashboard() {
   if (!stats) return null;
 
   return (
-    <div className="space-y-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight text-foreground">Registry Overview</h1>
-        <p className="text-muted-foreground mt-1">Live metrics from the Zimbabwe Canine Registry blockchain.</p>
-      </div>
+    <div className="space-y-10">
+      {/* Welcome Banner */}
+      <motion.div
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="relative overflow-hidden rounded-[2rem] bg-[#050505] border border-primary/20 p-8 md:p-12 shadow-2xl shadow-primary/5"
+      >
+        <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
+        <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
+          <div className="space-y-4">
+            <Badge className="bg-primary/20 text-primary border-primary/30 py-1 px-4 rounded-full font-mono tracking-tighter uppercase">Member Portal</Badge>
+            <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
+              Welcome back, <span className="gold-text-gradient">Thamsanqa</span>
+            </h1>
+            <p className="text-muted-foreground text-lg max-w-xl">
+              Your registry is currently fully synchronized with the national blockchain. You have 3 pending tasks for this week.
+            </p>
+            <div className="flex flex-wrap gap-4 pt-4">
+              <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
+                <PlusCircle className="w-5 h-5" /> Register New Dog
+              </Button>
+              <Button variant="outline" className="rounded-2xl h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 gap-2">
+                <FileCheck className="w-5 h-5" /> Generate Certificates
+              </Button>
+            </div>
+          </div>
+          <div className="hidden lg:block">
+            <div className="w-48 h-48 rounded-full border border-primary/20 flex items-center justify-center p-4">
+               <img src="/favicon.svg" alt="Logo" className="w-32 h-32 brightness-125 opacity-50" />
+            </div>
+          </div>
+        </div>
+      </motion.div>
 
+      {/* Stat Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title="Total Registered"
+          title="My Registered Dogs"
           value={stats.totalDogs}
-          icon={ShieldCheck}
-          trend={`+${stats.registeredThisMonth} this month`}
+          icon={Dog}
+          trend="+2 this month"
           trendPositive={true}
         />
         <StatCard 
           title="Blockchain Verified"
           value={stats.blockchainConfirmed}
           icon={LinkIcon}
-          description="Immutable records"
+          description="Immutable Records"
         />
         <StatCard 
-          title="Stolen Reports"
+          title="Pending Transfers"
           value={stats.stolenReports}
-          icon={AlertTriangle}
-          trend="Active alerts"
+          icon={TrendingUp}
+          trend="Awaiting Approval"
           trendPositive={false}
         />
         <StatCard 
-          title="Litters Tracked"
+          title="Certificates Issued"
           value={stats.totalLitters}
-          icon={Activity}
-          description="Pre-registered"
+          icon={ShieldCheck}
+          description="Official Status"
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2">
-          <CardHeader>
-            <CardTitle>Recent Registrations</CardTitle>
-            <CardDescription>Latest dogs added to the ledger</CardDescription>
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Recent Registrations */}
+        <Card className="lg:col-span-2 bg-card/30 backdrop-blur-xl border-white/5 rounded-[2rem] overflow-hidden">
+          <CardHeader className="flex flex-row items-center justify-between px-8 pt-8">
+            <div>
+              <CardTitle className="text-2xl">My Recent Dogs</CardTitle>
+              <CardDescription>Visual history of your registry entries</CardDescription>
+            </div>
+            <Button variant="ghost" className="text-primary hover:bg-primary/10 gap-2">
+              View All <ChevronRight className="w-4 h-4" />
+            </Button>
           </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+          <CardContent className="px-8 pb-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {Array.isArray(recentDogs) && recentDogs.map((dog) => (
-                <div key={dog.id} className="flex items-center justify-between p-4 border border-border rounded-lg bg-card/50 hover:bg-muted/50 transition-colors">
-                  <div className="flex flex-col">
-                    <Link href={`/dogs/${dog.id}`} className="font-semibold text-primary hover:underline">
-                      {dog.name}
-                    </Link>
-                    <span className="text-sm text-muted-foreground">{dog.breed} • {dog.gender}</span>
-                  </div>
-                  <div className="text-right flex flex-col items-end">
-                    <div className="flex items-center gap-1.5 text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
-                      <LinkIcon className="w-3 h-3" />
-                      {dog.microchipId}
+                <Link key={dog.id} href={`/dogs/${dog.id}`}>
+                  <div className="group flex items-center gap-4 p-4 border border-white/5 rounded-2xl bg-white/[0.02] hover:bg-white/[0.05] hover:border-primary/30 transition-all cursor-pointer">
+                    <div className="w-16 h-16 rounded-xl bg-primary/10 flex items-center justify-center overflow-hidden border border-white/5">
+                      <img src={`https://images.unsplash.com/photo-1589941013453-ec89f33b5e95?auto=format&fit=crop&q=80&w=100`} alt="Dog" className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
                     </div>
-                    <span className="text-xs text-muted-foreground mt-1">
-                      {dog.registrationDate ? format(new Date(dog.registrationDate), 'MMM d, yyyy') : 'Unknown'}
-                    </span>
+                    <div className="flex-1 min-w-0">
+                      <div className="font-bold text-lg truncate">{dog.name}</div>
+                      <div className="text-xs text-muted-foreground font-mono uppercase tracking-widest">{dog.breed}</div>
+                    </div>
+                    <div className="w-8 h-8 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-primary group-hover:border-primary transition-all">
+                      <ChevronRight className="w-4 h-4 group-hover:text-black" />
+                    </div>
                   </div>
-                </div>
+                </Link>
               ))}
             </div>
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Network Status</CardTitle>
-            <CardDescription>Mainnet Connectivity</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Blockchain</span>
-              <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20">Active</Badge>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Nodes</span>
-              <span className="text-sm font-mono">12 Connected</span>
-            </div>
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-muted-foreground">Avg. Block Time</span>
-              <span className="text-sm font-mono">1.2s</span>
-            </div>
-            <div className="pt-4 border-t border-border">
-              <Button variant="outline" size="sm" className="w-full">Network Explorer</Button>
-            </div>
-          </CardContent>
-        </Card>
+        {/* Network & Activity */}
+        <div className="space-y-8">
+          <Card className="bg-[#0A0A0A] border-primary/20 rounded-[2rem] overflow-hidden shadow-2xl shadow-primary/5">
+            <CardHeader className="p-8">
+              <div className="flex items-center gap-3 mb-2">
+                <Zap className="w-5 h-5 text-primary" />
+                <CardTitle className="text-lg">Network Node</CardTitle>
+              </div>
+              <CardDescription>Real-time Ledger Connectivity</CardDescription>
+            </CardHeader>
+            <CardContent className="px-8 pb-8 space-y-4">
+              <div className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
+                <span className="text-sm font-medium">Status</span>
+                <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 px-3">Operational</Badge>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="p-4 bg-white/5 rounded-2xl">
+                   <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Peers</div>
+                   <div className="text-lg font-mono font-bold">12</div>
+                </div>
+                <div className="p-4 bg-white/5 rounded-2xl">
+                   <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Latency</div>
+                   <div className="text-lg font-mono font-bold">14ms</div>
+                </div>
+              </div>
+              <Button className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+                Blockchain Explorer
+              </Button>
+            </CardContent>
+          </Card>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Network Activity</CardTitle>
-            <CardDescription>Live blockchain events</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-6 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-border before:to-transparent">
-              {Array.isArray(stats.recentActivity) && stats.recentActivity.map((activity, i) => (
-                <div key={activity.id} className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active">
-                  <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-background bg-muted text-muted-foreground shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 shadow-sm z-10">
-                    <ActivityIcon type={activity.type} />
-                  </div>
-                  <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] p-4 rounded-lg border border-border bg-card shadow-sm">
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="font-semibold text-sm capitalize">{activity.type.replace('_', ' ')}</span>
-                      <span className="text-xs text-muted-foreground font-mono">
-                        {activity.timestamp ? format(new Date(activity.timestamp), 'HH:mm') : '--:--'}
-                      </span>
-                    </div>
-                    <p className="text-sm text-muted-foreground">{activity.description}</p>
-                    {activity.dogName && (
-                      <div className="mt-2 text-xs font-medium text-primary">
-                        Dog: {activity.dogName}
+          <Card className="bg-card/30 border-white/5 rounded-[2rem] overflow-hidden">
+             <CardHeader className="p-8 pb-0">
+                <CardTitle className="text-lg">Registry Activity</CardTitle>
+             </CardHeader>
+             <CardContent className="p-8 space-y-6">
+                {Array.isArray(stats.recentActivity) && stats.recentActivity.slice(0, 3).map((activity, i) => (
+                   <div key={i} className="flex gap-4">
+                      <div className="w-2 h-2 rounded-full bg-primary mt-2 flex-shrink-0" />
+                      <div className="space-y-1">
+                         <p className="text-sm font-semibold">{activity.description}</p>
+                         <p className="text-[10px] font-mono text-muted-foreground uppercase">{activity.timestamp ? format(new Date(activity.timestamp), 'HH:mm') : '--:--'}</p>
                       </div>
-                    )}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+                   </div>
+                ))}
+             </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );
 }
 
-function StatCard({ title, value, icon: Icon, description, trend, trendPositive }: any) {
+function StatCard({ title, value, icon: Icon, trend, trendPositive, description }: any) {
   return (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">
-        <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-        <Icon className="w-4 h-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
-        {(description || trend) && (
-          <p className={cn(
-            "text-xs mt-1",
-            trendPositive === true ? "text-emerald-500" : trendPositive === false ? "text-destructive" : "text-muted-foreground"
-          )}>
-            {trend || description}
-          </p>
-        )}
+    <Card className="bg-card/30 border-white/5 rounded-[2rem] hover:border-primary/30 transition-all group overflow-hidden">
+      <CardContent className="p-8">
+        <div className="flex items-center justify-between mb-6">
+           <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
+              <Icon className="w-6 h-6" />
+           </div>
+           {trend && (
+             <Badge className={cn(
+               "font-mono text-[10px] uppercase",
+               trendPositive ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20" : "bg-destructive/10 text-destructive border-destructive/20"
+             )}>
+               {trend}
+             </Badge>
+           )}
+        </div>
+        <div className="space-y-1">
+           <h3 className="text-sm font-bold uppercase tracking-widest text-muted-foreground">{title}</h3>
+           <div className="text-3xl font-bold tracking-tighter">{value}</div>
+           {description && <p className="text-xs text-muted-foreground italic mt-2">{description}</p>}
+        </div>
       </CardContent>
     </Card>
   );
 }
 
-function ActivityIcon({ type }: { type: string }) {
-  switch (type) {
-    case 'registration': return <ShieldCheck className="w-4 h-4" />;
-    case 'transfer': return <TrendingUp className="w-4 h-4" />;
-    case 'health_update': return <Syringe className="w-4 h-4" />;
-    case 'stolen_flag': return <AlertTriangle className="w-4 h-4 text-destructive" />;
-    case 'litter': return <Activity className="w-4 h-4" />;
-    default: return <Activity className="w-4 h-4" />;
-  }
-}
