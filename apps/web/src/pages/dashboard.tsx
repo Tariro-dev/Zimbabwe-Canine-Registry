@@ -2,7 +2,7 @@ import * as React from 'react';
 import { 
   useGetDashboardStats, 
   useListRecentDogs,
-  ActivityItemType
+  ActivityItem
 } from '@workspace/api-client-react';
 import { 
   Card, 
@@ -193,7 +193,7 @@ function StatCard({ title, value, icon: Icon, description, trend, trendPositive 
   );
 }
 
-function ActivityIcon({ type }: { type: ActivityItemType }) {
+function ActivityIcon({ type }: { type: string }) {
   switch (type) {
     case 'registration': return <ShieldCheck className="w-4 h-4" />;
     case 'transfer': return <TrendingUp className="w-4 h-4" />;

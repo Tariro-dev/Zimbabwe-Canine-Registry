@@ -43,7 +43,7 @@ export default function DogCertificate({ id }: { id: string }) {
             <CertField label="Gender" value={dog.gender} />
             <CertField label="Color" value={dog.color} />
             <CertField label="Microchip Identification" value={dog.microchipId} className="font-mono" />
-            <CertField label="Date of Birth" value={format(new Date(dog.birthDate), 'PPP')} />
+            <CertField label="Date of Birth" value={format(new Date(dog.birthDate || ''), 'PPP')} />
             <CertField label="Current Owner" value={dog.ownerName} />
             <CertField label="Registry ID" value={dog.id} className="font-mono text-xs" />
           </div>
@@ -62,7 +62,7 @@ export default function DogCertificate({ id }: { id: string }) {
             </div>
 
             <div className="text-center space-y-1">
-              <div className="text-xs font-bold text-primary">Certificate No: {dog.certNumber || 'ZCR-000000'}</div>
+              <div className="text-xs font-bold text-primary">Certificate No: {dog.breederCertification?.certNumber || 'ZCR-000000'}</div>
               <p className="text-[10px] text-muted-foreground">Issued: {format(new Date(dog.registrationDate), 'PP')}</p>
             </div>
           </div>

@@ -122,7 +122,7 @@ export default function DogDetail({ id }: { id: string }) {
           <CardContent className="space-y-4">
             <DetailRow label="Microchip ID" value={dog.microchipId} mono />
             <DetailRow label="Color" value={dog.color} />
-            <DetailRow label="Birth Date" value={format(new Date(dog.birthDate), 'PP')} />
+            <DetailRow label="Birth Date" value={dog.birthDate ? format(new Date(dog.birthDate), 'PP') : 'N/A'} />
             <DetailRow label="Registration Date" value={format(new Date(dog.registrationDate), 'PP')} />
             <DetailRow label="Owner" value={dog.ownerName} />
             <DetailRow label="Breeder" value={dog.breederName} />

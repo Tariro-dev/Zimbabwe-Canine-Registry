@@ -16,13 +16,19 @@ export default function Verify() {
 
   const { data: dog, isLoading, error } = useSearchDogByMicrochip(
     { microchip: submittedQuery },
-    { query: { enabled: !!submittedQuery, retry: false } }
+    { query: { enabled: !!submittedQuery, retry: false } as any }
   );
 
-  const { data: filteredDogs, isLoading: isFiltering } = useListDogs({
-    breed: filters.breed || undefined,
-    gender: filters.gender || undefined
-  });
+  const { data: allDogs, isLoading: isFiltering } = useListDogs();
+
+  const filteredDogs = React.useMemo(() => {
+    if (!allDogs) return [];
+    return allDogs.filter(d => {
+      const breedMatch = !filters.breed || d.breed === filters.breed;
+      const genderMatch = !filters.gender || d.gender === filters.gender;
+      return breedMatch && genderMatch;
+    });
+  }, [allDogs, filters]);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();

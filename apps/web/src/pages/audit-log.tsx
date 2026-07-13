@@ -22,8 +22,7 @@ export default function AuditLog() {
     if (!stats?.recentActivity || !Array.isArray(stats.recentActivity)) return [];
     return stats.recentActivity.filter(a =>
       a.description.toLowerCase().includes(filter.toLowerCase()) ||
-      a.dogName?.toLowerCase().includes(filter.toLowerCase()) ||
-      a.microchipId?.toLowerCase().includes(filter.toLowerCase())
+      a.dogName?.toLowerCase().includes(filter.toLowerCase())
     );
   }, [stats?.recentActivity, filter]);
 
@@ -81,7 +80,6 @@ export default function AuditLog() {
                       {activity.dogName ? (
                         <div className="flex flex-col">
                           <span className="font-semibold">{activity.dogName}</span>
-                          <span className="text-[10px] text-muted-foreground font-mono">{activity.microchipId}</span>
                         </div>
                       ) : (
                         <span className="text-muted-foreground">-</span>
