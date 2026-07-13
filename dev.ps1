@@ -8,4 +8,5 @@ if (Test-Path .env) {
 }
 
 Write-Host "Starting Dynamic System (Backend + Frontend)..." -ForegroundColor Yellow
-pnpm --filter @workspace/api-server --filter @workspace/web dev --parallel
+# Using --parallel BEFORE the command 'run dev' ensures pnpm consumes it, not the underlying app
+pnpm -r --filter "@workspace/api-server" --filter "@workspace/web" --parallel run dev
