@@ -19,7 +19,7 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
   }
 
   req.user = user;
-  next();
+  return next();
 };
 
 export const authorize = (roles: string[]) => {
@@ -27,6 +27,6 @@ export const authorize = (roles: string[]) => {
     if (!req.user || !roles.includes(req.user.role)) {
       return res.status(403).json({ error: "Forbidden: Insufficient permissions" });
     }
-    next();
+    return next();
   };
 };
