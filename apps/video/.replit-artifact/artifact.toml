@@ -1,0 +1,27 @@
+kind = "video"
+previewPath = "/video/"
+title = "ZCR Explainer Video"
+version = "1.0.0"
+id = "artifacts/video"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/video/" ]
+localPort = 24908
+
+[services.development]
+run = "pnpm --filter @workspace/video run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/video", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/video/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "24908"
+BASE_PATH = "/video/"
