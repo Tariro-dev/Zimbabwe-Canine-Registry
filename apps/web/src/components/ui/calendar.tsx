@@ -128,9 +128,9 @@ function Calendar({
           return (
             <div
               data-slot="calendar"
-              ref={rootRef}
+              ref={rootRef as any}
               className={cn(className)}
-              {...props}
+              {...(props as any)}
             />
           );
         },
@@ -157,7 +157,7 @@ function Calendar({
         DayButton: CalendarDayButton,
         WeekNumber: ({ children, ...props }) => {
           return (
-            <td {...props}>
+            <td {...(props as any)}>
               <div className="flex size-[--cell-size] items-center justify-center text-center">
                 {children}
               </div>
@@ -189,6 +189,7 @@ function CalendarDayButton({
       ref={ref}
       variant="ghost"
       size="icon"
+      {...(props as any)}
       data-day={day.date.toLocaleDateString()}
       data-selected-single={
         modifiers.selected &&
