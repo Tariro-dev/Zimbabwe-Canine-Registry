@@ -7,5 +7,5 @@ if (Test-Path .env) {
     }
 }
 
-Write-Host "Connecting to Neon Database..." -ForegroundColor Gold
+Write-Host "Connecting to Neon Database..." -ForegroundColor Yellow
 pnpm --filter @workspace/db run push
