@@ -111,6 +111,7 @@ router.post("/litters/:id/register-puppies", authenticate, async (req: AuthReque
   }
 
   res.status(201).json({ registeredCount: results.length, dogIds: results });
+  return;
 });
 
 export default router;

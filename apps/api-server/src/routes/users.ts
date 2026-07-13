@@ -38,7 +38,6 @@ router.patch("/users/me", async (req, res) => {
   if (!rows[0]) { res.status(404).json({ error: "User not found" }); return; }
   const updates: Partial<typeof usersTable.$inferInsert> = {};
   if (body.name !== undefined) updates.name = body.name;
-  if (body.role !== undefined) updates.role = body.role;
   if (body.kennelName !== undefined) updates.kennelName = body.kennelName;
   if (body.licenseNumber !== undefined) updates.licenseNumber = body.licenseNumber;
   await db.update(usersTable).set(updates).where(eq(usersTable.id, CURRENT_USER_ID));
