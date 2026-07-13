@@ -1,8 +1,0 @@
-uploads = []
-generated = []
-
-[[outputs]]
-id = "HhWODP6PVB8fFLQslhLgK"
-uri = "file://artifacts/video/public/audio/bg_music.mp3"
-type = "audio"
-title = "ZCR blockchain tech background music"
