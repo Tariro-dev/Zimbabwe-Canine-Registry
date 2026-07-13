@@ -118,6 +118,18 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/Dog"
+    delete:
+      operationId: deleteDog
+      tags: [dogs]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: Dog deleted
 
   /dogs/{id}/pedigree:
     get:
