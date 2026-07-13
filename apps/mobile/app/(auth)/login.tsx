@@ -57,7 +57,7 @@ export default function LoginScreen() {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
 
       // If we have a user with this email, log them in
-      const userToLogin = users.find(u => u.email.toLowerCase() === email.toLowerCase());
+      const userToLogin = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
 
       if (userToLogin) {
         // In a real app, you'd use a secure token.

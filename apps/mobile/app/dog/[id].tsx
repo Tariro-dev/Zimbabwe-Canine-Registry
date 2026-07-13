@@ -182,8 +182,8 @@ export default function DogDetailScreen() {
   const { dogs, user, toggleStolen } = useRegistry();
   const [activeTab, setActiveTab] = useState<Tab>('info');
   const [showQR, setShowQR] = useState(false);
-  const qrRef = useRef<any>();
-  const viewShotRef = useRef<any>();
+  const qrRef = useRef<any>(null);
+  const viewShotRef = useRef<any>(null);
 
   const topPt = Platform.OS === 'web' ? 67 : insets.top;
 
@@ -352,7 +352,7 @@ export default function DogDetailScreen() {
         <View style={[styles.tabContent, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
           {activeTab === 'info' && (
             <>
-              <InfoRow label="Date of Birth" value={dog.birthDate} />
+              <InfoRow label="Date of Birth" value={dog.birthDate || ''} />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
               {dog.weight ? <><InfoRow label="Weight" value={dog.weight} /><View style={[styles.divider, { backgroundColor: colors.border }]} /></> : null}
               <InfoRow label="Current Owner" value={dog.ownerName} highlight />
