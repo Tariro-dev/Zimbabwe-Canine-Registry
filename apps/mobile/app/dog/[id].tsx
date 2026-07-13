@@ -368,7 +368,7 @@ export default function DogDetailScreen() {
               <InfoRow label="Sterilization" value={dog.sterilizationStatus} />
               <View style={[styles.divider, { backgroundColor: colors.border }]} />
               {dog.lastCheckup ? <><InfoRow label="Last Checkup" value={dog.lastCheckup} /><View style={[styles.divider, { backgroundColor: colors.border }]} /></> : null}
-              {dog.dnaHash ? <><InfoRow label="DNA Hash" value={dog.dnaHash} mono /><View style={[styles.divider, { backgroundColor: colors.border }]} /></> : null}
+              {dog.dnaHash ? <><InfoRow label="DNA Hash" value={dog.dnaHash || ''} mono /><View style={[styles.divider, { backgroundColor: colors.border }]} /></> : null}
               <View style={styles.vaccineWrap}>
                 <Text style={[styles.vaccineLabel, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium' }]}>VACCINE HISTORY</Text>
                 <Text style={[styles.vaccineText, { color: colors.foreground, fontFamily: 'Inter_400Regular' }]}>
@@ -474,7 +474,7 @@ export default function DogDetailScreen() {
             </ViewShot>
 
             <View style={{ gap: 10, marginTop: 20 }}>
-              <GoldButton title="Share QR Passport" onPress={handleExportQR} icon="share-variant" />
+              <GoldButton title="Share QR Passport" onPress={handleExportQR} />
               <TouchableOpacity
                 style={[styles.saveBtn, { borderColor: colors.border, borderRadius: colors.radius }]}
                 onPress={() => setShowQR(false)}

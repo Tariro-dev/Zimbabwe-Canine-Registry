@@ -20,7 +20,7 @@ export default function TransferOwnershipScreen() {
   const [newOwnerId, setNewOwnerId] = useState('');
   const [saving, setSaving] = useState(false);
 
-  const canTransfer = dog && (dog.ownerId === user.id || user.role === 'regulator');
+  const canTransfer = dog && user && (dog.ownerId === user.id || user.role === 'regulator');
 
   if (!dog) {
     return (

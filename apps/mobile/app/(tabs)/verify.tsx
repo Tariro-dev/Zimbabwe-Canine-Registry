@@ -77,7 +77,7 @@ export default function VerifyScreen() {
         <CameraView
           style={StyleSheet.absoluteFill}
           onBarcodeScanned={handleBarCodeScanned}
-          barcodeSettings={{
+          barcodeScannerSettings={{
             barcodeTypes: ['qr'],
           }}
         />
