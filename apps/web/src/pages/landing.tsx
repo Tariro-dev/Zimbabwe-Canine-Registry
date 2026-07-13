@@ -15,7 +15,9 @@ import {
   Linkedin,
   Mail,
   Phone,
-  ScanLine
+  ScanLine,
+  AlertTriangle,
+  QrCode
 } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { Button } from '@/components/ui/button';
@@ -140,10 +142,19 @@ export default function Landing() {
             </p>
 
             <div className="flex flex-col sm:flex-row gap-4 mb-12">
-              <Button size="lg" className="h-14 px-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg transition-transform hover:scale-105 active:scale-95">
+              <Button
+                size="lg"
+                className="h-14 px-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg transition-transform hover:scale-105 active:scale-95"
+                onClick={() => setLocation('/register')}
+              >
                 Register Your Dog
               </Button>
-              <Button size="lg" variant="outline" className="h-14 px-10 rounded-full border-primary/50 hover:bg-primary/10 text-white font-bold text-lg backdrop-blur-sm transition-transform hover:scale-105 active:scale-95">
+              <Button
+                size="lg"
+                variant="outline"
+                className="h-14 px-10 rounded-full border-primary/50 hover:bg-primary/10 text-white font-bold text-lg backdrop-blur-sm transition-transform hover:scale-105 active:scale-95"
+                onClick={() => setLocation('/verify')}
+              >
                 Verify Certificate
               </Button>
             </div>
@@ -359,6 +370,74 @@ export default function Landing() {
                 </Card>
               </motion.div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Lost and Found Section */}
+      <section id="lost-found" className="py-24 px-6 md:px-12 bg-background relative">
+        <div className="container mx-auto">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
+            <div className="space-y-8 order-2 lg:order-1">
+              <motion.div {...fadeInUp}>
+                <p className="text-primary font-mono text-sm tracking-[0.3em] uppercase mb-4">Emergency Protocol</p>
+                <h2 className="text-4xl md:text-5xl font-bold mb-6">Lost & Found Network</h2>
+                <p className="text-lg text-muted-foreground leading-relaxed mb-8">
+                  Our national network instantly alerts shelters, veterinarians, and registry officials
+                  when a dog is reported missing. Use our interactive map to see active alerts.
+                </p>
+              </motion.div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                 {[
+                   { label: 'Search by Breed', icon: Search },
+                   { label: 'Search by Microchip', icon: QrCode },
+                   { label: 'Location Tracking', icon: MapPin },
+                   { label: 'Reward Distribution', icon: Star }
+                 ].map((tool, i) => (
+                   <div key={i} className="flex items-center gap-4 p-4 bg-card/30 border border-white/5 rounded-2xl">
+                      <tool.icon className="w-6 h-6 text-primary" />
+                      <span className="font-bold text-sm">{tool.label}</span>
+                   </div>
+                 ))}
+              </div>
+
+              <Button className="rounded-full bg-destructive hover:bg-destructive/90 text-white font-bold h-14 px-10 gap-2">
+                 <AlertTriangle className="w-5 h-5" /> Report a Missing Dog
+              </Button>
+            </div>
+
+            <div className="order-1 lg:order-2">
+               <motion.div
+                 {...fadeInUp}
+                 className="relative aspect-square bg-[#0a0a0a] rounded-[3rem] border border-white/5 overflow-hidden shadow-2xl"
+               >
+                  {/* Mock Map Visualization */}
+                  <div className="absolute inset-0 opacity-40 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-0.1833,31.0333,12/800x800?access_token=pk.eyJ1IjoibW9ja3VwIiwiYSI6ImNrY200eG00ZTAwMXoycnM1ZzI0ZzB6ZzIifQ.0Z0Z0Z0Z0Z0Z0Z0Z0Z0Z0A')] bg-cover" />
+
+                  {/* Animated Pulses for missing dogs */}
+                  <div className="absolute top-1/3 left-1/2 w-4 h-4 bg-destructive rounded-full">
+                     <div className="absolute inset-0 bg-destructive rounded-full animate-ping" />
+                  </div>
+                  <div className="absolute bottom-1/4 left-1/3 w-4 h-4 bg-destructive rounded-full">
+                     <div className="absolute inset-0 bg-destructive rounded-full animate-ping delay-700" />
+                  </div>
+
+                  <div className="absolute bottom-8 left-8 right-8 glass p-6 rounded-2xl border border-white/10 flex items-center gap-6">
+                     <div className="w-16 h-16 rounded-xl overflow-hidden">
+                        <img src="https://images.unsplash.com/photo-1517849845537-4d257902454a?auto=format&fit=crop&q=80&w=200" className="w-full h-full object-cover" />
+                     </div>
+                     <div>
+                        <div className="flex items-center gap-2 mb-1">
+                           <span className="text-destructive font-black text-[10px] uppercase tracking-widest">Active Alert</span>
+                           <span className="text-[10px] text-muted-foreground font-mono">• 2h ago</span>
+                        </div>
+                        <h4 className="font-bold text-white">"Max" - Beagle</h4>
+                        <p className="text-xs text-muted-foreground">Last seen: Avondale, Harare</p>
+                     </div>
+                  </div>
+               </motion.div>
+            </div>
           </div>
         </div>
       </section>
