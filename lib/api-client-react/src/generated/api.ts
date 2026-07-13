@@ -490,6 +490,70 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
       return useMutation(getUpdateDogMutationOptions(options));
     }
 
+export const getDeleteDogUrl = (id: string,) => {
+
+
+
+
+  return `/api/dogs/${id}`
+}
+
+export const deleteDog = async (id: string, options?: RequestInit): Promise<void> => {
+
+  return customFetch<void>(getDeleteDogUrl(id),
+  {
+    ...options,
+    method: 'DELETE'
+
+
+  }
+);}
+
+
+
+
+export const getDeleteDogMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDog>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof deleteDog>>, TError,{id: string}, TContext> => {
+
+const mutationKey = ['deleteDog'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof deleteDog>>, {id: string}> = (props) => {
+          const {id} = props ?? {};
+
+          return  deleteDog(id,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type DeleteDogMutationResult = NonNullable<Awaited<ReturnType<typeof deleteDog>>>
+
+    export type DeleteDogMutationError = ErrorType<unknown>
+
+    export const useDeleteDog = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof deleteDog>>, TError,{id: string}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof deleteDog>>,
+        TError,
+        {id: string},
+        TContext
+      > => {
+      return useMutation(getDeleteDogMutationOptions(options));
+    }
+
 export const getGetDogPedigreeUrl = (id: string,
     params?: GetDogPedigreeParams,) => {
   const normalizedParams = new URLSearchParams();

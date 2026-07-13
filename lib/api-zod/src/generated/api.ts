@@ -216,6 +216,13 @@ export const UpdateDogResponse = zod.object({
 })
 
 
+export const DeleteDogParams = zod.object({
+  "id": zod.coerce.string()
+})
+
+export const DeleteDogResponse = zod.void()
+
+
 export const GetDogPedigreeParams = zod.object({
   "id": zod.coerce.string()
 })
