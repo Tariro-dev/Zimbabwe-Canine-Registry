@@ -58,8 +58,8 @@ router.post("/litters", authenticate, async (req: AuthRequest, res) => {
 
 // POST /litters/:id/register-puppies (Litter Management Workflow)
 router.post("/litters/:id/register-puppies", authenticate, async (req: AuthRequest, res) => {
-  const { id } = req.params;
-  const { puppies } = req.body; // Array of { name, gender, color, microchipId }
+  const id = req.params.id as string;
+  const puppies = req.body.puppies as any[]; // Array of { name, gender, color, microchipId }
   const user = req.user!;
 
   const litterRows = await db.select().from(littersTable).where(eq(littersTable.id, id));
