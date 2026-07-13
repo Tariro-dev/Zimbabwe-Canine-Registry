@@ -40,7 +40,7 @@ export default function UpdateHealthScreen() {
 
   const handleUpdate = async () => {
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    updateHealthRecord(dog.id, vaccines, status, lastCheckup);
+    await updateHealthRecord(dog.id, vaccines, status, lastCheckup);
     Alert.alert('Success', 'Health record updated and synced to blockchain.');
     router.back();
   };

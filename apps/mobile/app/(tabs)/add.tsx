@@ -195,7 +195,7 @@ export default function AddScreen() {
     setSaving(true);
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      const newDog = addDog({
+      const newDog = await addDog({
         name: name.trim(),
         breed: breed.trim(),
         gender,
@@ -226,7 +226,7 @@ export default function AddScreen() {
     setSaving(true);
     try {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      addLitter({ dameMicrochip: lDame.trim(), sireMicrochip: lSire.trim(), expectedBirthDate: lExpectedDate.trim() });
+      await addLitter({ dameMicrochip: lDame.trim(), sireMicrochip: lSire.trim(), expectedBirthDate: lExpectedDate.trim() });
       setLDame(''); setLSire(''); setLExpectedDate('');
       Alert.alert('Registered', 'Litter pre-registered successfully.');
     } finally {
