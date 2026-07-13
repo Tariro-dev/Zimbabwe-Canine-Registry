@@ -17,10 +17,10 @@ export default function LoginScreen() {
 
   // Auto-fill email if there's only one user
   useEffect(() => {
-    if (users.length === 1 && !email) {
+    if (users.length === 1 && !email && users[0].email) {
       setEmail(users[0].email);
     }
-  }, [users]);
+  }, [users, email]);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -64,10 +64,10 @@ export default function LoginScreen() {
         // Here we'll simulate by calling login with their stored password if available,
         // or just force a login state in the context.
         // For this demo, let's assume we can log them in because device security passed.
-        await login(userToLogin.email, userToLogin.password || '');
+        await login(userToLogin.email || '', (userToLogin as any).password || '');
       } else if (users.length > 0) {
         // If no email entered, login the most recent user
-        await login(users[0].email, users[0].password || '');
+        await login(users[0].email || '', (users[0] as any).password || '');
       } else {
         Alert.alert('No Account Found', 'Please sign up first.');
       }
