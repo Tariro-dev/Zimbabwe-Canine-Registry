@@ -1,12 +1,16 @@
 #!/bin/bash
-# Configuration
-export PORT=5000
+# Zimbabwe Canine Registry - Backend Runner
 
-# 1. PASTE YOUR NEON CONNECTION STRING BELOW
-export DATABASE_URL="postgres://YOUR_USER:YOUR_PASSWORD@YOUR_NEON_HOST/neondb?sslmode=require"
+# Load variables from .env if present
+if [ -f .env ]; then
+  # This simple way works in most bash environments
+  export $(grep -v '^#' .env | xargs)
+fi
 
-echo "Syncing Schema to Neon Cloud..."
-pnpm --filter @workspace/db run push
+# Ensure default PORT if not set
+export PORT=${PORT:-5000}
 
 echo "Starting Zimbabwe Canine Registry API Server..."
+echo "Database: $DATABASE_URL"
+
 pnpm --filter @workspace/api-server run dev
