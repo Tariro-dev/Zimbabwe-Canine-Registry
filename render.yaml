@@ -17,11 +17,10 @@ services:
         value: 10000
 
   # 2. The Web Frontend (Static Site)
-  - type: web
+  - type: static_site
     name: zcr-web
-    env: static
     buildCommand: pnpm install && pnpm --filter @workspace/web run build
-    staticPublishDir: apps/web/dist/public
+    publishDir: apps/web/dist/public
     envVars:
       - key: VITE_API_URL
         fromService:
