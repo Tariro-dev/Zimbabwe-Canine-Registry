@@ -37,45 +37,13 @@ export function AppLayout({ children }: AppLayoutProps) {
     }
   }, [isLoading, setLocation, token, isPublicPath]);
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
-        <div className="w-20 h-20 bg-destructive/10 text-destructive rounded-[2rem] flex items-center justify-center mb-6 border border-destructive/20 shadow-2xl">
-          <AlertTriangle className="w-10 h-10" />
-        </div>
-        <h1 className="text-2xl font-bold mb-2">Registry Connection Offline</h1>
-        <p className="text-muted-foreground max-w-sm mb-8">
-          The national blockchain node is currently synchronizing or offline. Please ensure the backend server is running and try again.
-        </p>
-        <Button
-          variant="outline"
-          className="border-primary/30 text-primary"
-          onClick={() => window.location.reload()}
-        >
-          Retry Connection
-        </Button>
-      </div>
-    );
-  }
-
-  if (isLoading) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="flex flex-col items-center gap-4">
-           <img src="/favicon.svg" className="w-16 h-16 animate-pulse brightness-125" alt="Loading..." />
-           <p className="text-primary font-mono text-xs tracking-widest animate-pulse">SYNCHRONIZING_LEDGER...</p>
-        </div>
-      </div>
-    );
-  }
-
   const pageTitle = React.useMemo(() => {
     const path = location.split('/')[1] || 'Dashboard';
     return path.charAt(0).toUpperCase() + path.slice(1).replace(/-/g, ' ');
   }, [location]);
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       <Sidebar />
       
       {/* Mobile topbar */}
@@ -147,20 +115,41 @@ export function AppLayout({ children }: AppLayoutProps) {
         </header>
 
         <div className="flex-1 p-6 md:p-10 max-w-[1600px] w-full mx-auto">
-          <AnimatePresence mode="wait">
-            <motion.div
-              key={location}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.3, ease: "easeOut" }}
-            >
-              {children}
-            </motion.div>
-          </AnimatePresence>
+          {error ? (
+            <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+              <div className="w-20 h-20 bg-destructive/10 text-destructive rounded-[2rem] flex items-center justify-center mb-6 border border-destructive/20 shadow-2xl">
+                <AlertTriangle className="w-10 h-10" />
+              </div>
+              <h1 className="text-2xl font-bold mb-2">Registry Connection Offline</h1>
+              <p className="text-muted-foreground max-w-sm mb-8">
+                The national blockchain node is currently offline. Please ensure the backend server is running.
+              </p>
+              <Button variant="outline" className="border-primary/30 text-primary" onClick={() => window.location.reload()}>
+                Retry Connection
+              </Button>
+            </div>
+          ) : isLoading ? (
+            <div className="h-full flex flex-col items-center justify-center">
+              <div className="flex flex-col items-center gap-4">
+                 <img src="/favicon.svg" className="w-16 h-16 animate-pulse brightness-125" alt="Loading..." />
+                 <p className="text-primary font-mono text-xs tracking-widest animate-pulse">SYNCHRONIZING_LEDGER...</p>
+              </div>
+            </div>
+          ) : (
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={location}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.3, ease: "easeOut" }}
+              >
+                {children}
+              </motion.div>
+            </AnimatePresence>
+          )}
         </div>
       </main>
     </div>
   );
 }
-
