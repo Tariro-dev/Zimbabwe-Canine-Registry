@@ -1,12 +1,13 @@
 import * as React from 'react';
 import { Sidebar } from './sidebar';
-import { Menu, Search, Bell, Mail, Sun, Moon } from 'lucide-react';
+import { Menu, Search, Bell, Mail, Sun, Moon, User } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { NotificationCenter } from '../notification-center';
 import { Input } from '@/components/ui/input';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useTheme } from 'next-themes';
 import { Button } from '@/components/ui/button';
+import { useGetMyProfile } from '@workspace/api-client-react';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -15,6 +16,7 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [location] = useLocation();
   const { theme, setTheme } = useTheme();
+  const { data: profile } = useGetMyProfile();
 
   const pageTitle = React.useMemo(() => {
     const path = location.split('/')[1] || 'Dashboard';
@@ -73,12 +75,16 @@ export function AppLayout({ children }: AppLayoutProps) {
 
             <div className="flex items-center gap-3 group cursor-pointer">
               <div className="text-right hidden xl:block">
-                <div className="text-sm font-bold tracking-tight group-hover:text-primary transition-colors">Thamsanqa Zwana</div>
-                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">Verified Breeder</div>
+                <div className="text-sm font-bold tracking-tight group-hover:text-primary transition-colors">
+                  {profile?.name || 'Loading...'}
+                </div>
+                <div className="text-[10px] text-muted-foreground font-bold uppercase tracking-widest">
+                  {profile?.role || 'User'}
+                </div>
               </div>
               <div className="relative">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary shadow-lg shadow-primary/5 group-hover:scale-105 transition-transform">
-                  TZ
+                  {profile?.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : <User className="w-5 h-5" />}
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-background rounded-full" />
               </div>

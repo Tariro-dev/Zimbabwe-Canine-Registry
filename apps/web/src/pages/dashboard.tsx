@@ -2,6 +2,7 @@ import * as React from 'react';
 import { 
   useGetDashboardStats, 
   useListRecentDogs,
+  useGetMyProfile
 } from '@workspace/api-client-react';
 import { 
   Card, 
@@ -32,6 +33,7 @@ import { motion } from 'framer-motion';
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: recentDogs, isLoading: dogsLoading } = useListRecentDogs();
+  const { data: profile } = useGetMyProfile();
 
   if (statsLoading || dogsLoading) {
     return (
@@ -61,7 +63,7 @@ export default function Dashboard() {
           <div className="space-y-4">
             <Badge className="bg-primary/20 text-primary border-primary/30 py-1 px-4 rounded-full font-mono tracking-tighter uppercase">Member Portal</Badge>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
-              Welcome back, <span className="gold-text-gradient">Thamsanqa</span>
+              Welcome back, <span className="gold-text-gradient">{profile?.name?.split(' ')[0] || 'Member'}</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl">
               Your registry is currently fully synchronized with the national blockchain. You have 3 pending tasks for this week.
