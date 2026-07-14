@@ -1,7 +1,7 @@
 import { Router, type IRouter } from "express";
 import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
-import { UpdateMyProfileBody } from "@workspace/api-zod";
+import { UpdateMyProfileBody, RegisterUserBody, LoginUserBody } from "@workspace/api-zod";
 import { authenticate } from "../middlewares/auth";
 import { genId } from "../lib/helpers";
 import bcrypt from "bcryptjs";
@@ -30,11 +30,8 @@ router.get("/users/me", authenticate, async (req: any, res) => {
 // POST /login
 router.post("/login", async (req, res) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      return res.status(400).json({ error: "Email and password are required" });
-    }
+    const body = LoginUserBody.parse(req.body);
+    const { email, password } = body;
 
     const userRows = await db.select().from(usersTable).where(eq(usersTable.email, email));
     const user = userRows[0];
@@ -63,6 +60,9 @@ router.post("/login", async (req, res) => {
       }
     });
   } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
     console.error("Login error:", error);
     res.status(500).json({ error: "Internal server error during login" });
   }
@@ -71,11 +71,8 @@ router.post("/login", async (req, res) => {
 // POST /register
 router.post("/register", async (req, res) => {
   try {
-    const { name, email, password, phone, nationalId, role, province } = req.body;
-
-    if (!name || !email || !password || !role) {
-      return res.status(400).json({ error: "Missing required fields" });
-    }
+    const body = RegisterUserBody.parse(req.body);
+    const { name, email, password, phone, nationalId, role, province } = body;
 
     // Check if user already exists
     const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
@@ -115,6 +112,9 @@ router.post("/register", async (req, res) => {
       }
     });
   } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
     console.error("Registration error:", error);
     res.status(500).json({ error: "Internal server error during registration" });
   }

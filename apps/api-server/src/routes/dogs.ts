@@ -91,53 +91,60 @@ router.get("/dogs/:id", async (req, res) => {
 });
 
 // POST /dogs
-router.post("/dogs", authenticate, async (req: AuthRequest, res) => {
-  const body = CreateDogBody.parse(req.body);
-  const user = req.user!;
+router.post("/dogs", authenticate, authorize(['breeder', 'regulator']), async (req: AuthRequest, res) => {
+  try {
+    const body = CreateDogBody.parse(req.body);
+    const user = req.user!;
 
-  const id = genId();
-  const regDate = today();
+    const id = genId();
+    const regDate = today();
 
-  const dogData = {
-    id,
-    name: body.name,
-    breed: body.breed,
-    gender: body.gender,
-    color: body.color ?? "Unknown",
-    birthDate: body.birthDate,
-    microchipId: body.microchipId,
-    ownerId: user.id,
-    ownerName: user.name,
-    breederId: user.id,
-    breederName: user.name,
-    dameMicrochip: body.dameMicrochip ?? null,
-    sireMicrochip: body.sireMicrochip ?? null,
-    litterId: body.litterId ?? null,
-    vaccineHistory: body.vaccineHistory ?? "",
-    sterilizationStatus: body.sterilizationStatus ?? "Not Sterilized",
-    dnaHash: body.dnaHash ?? null,
-    weight: body.weight ?? null,
-    registrationDate: regDate,
-    isStolen: false,
-  };
+    const dogData = {
+      id,
+      name: body.name,
+      breed: body.breed,
+      gender: body.gender,
+      color: body.color ?? "Unknown",
+      birthDate: body.birthDate,
+      microchipId: body.microchipId,
+      ownerId: user.id,
+      ownerName: user.name,
+      breederId: user.id,
+      breederName: user.name,
+      dameMicrochip: body.dameMicrochip ?? null,
+      sireMicrochip: body.sireMicrochip ?? null,
+      litterId: body.litterId ?? null,
+      vaccineHistory: body.vaccineHistory ?? "",
+      sterilizationStatus: body.sterilizationStatus ?? "Not Sterilized",
+      dnaHash: body.dnaHash ?? null,
+      weight: body.weight ?? null,
+      registrationDate: regDate,
+      isStolen: false,
+    };
 
-  // REAL BLOCKCHAIN ANCHORING
-  // Generates a keccak256 hash of the record data
-  const bc = await anchorCanineRecord(dogData);
+    // REAL BLOCKCHAIN ANCHORING
+    const bc = await anchorCanineRecord(dogData);
 
-  await db.insert(dogsTable).values({
-    ...dogData,
-    blockchainTxHash: bc.txHash,
-    blockchainSyncStatus: bc.status as any,
-    blockchainConfirmedAt: bc.confirmedAt,
-    certNumber: genCertNumber(),
-    certIssuedDate: regDate,
-    certStatus: "active",
-  });
+    await db.insert(dogsTable).values({
+      ...dogData,
+      blockchainTxHash: bc.txHash,
+      blockchainSyncStatus: bc.status as any,
+      blockchainConfirmedAt: bc.confirmedAt,
+      certNumber: genCertNumber(),
+      certIssuedDate: regDate,
+      certStatus: "active",
+    });
 
-  const rows = await db.select().from(dogsTable).where(eq(dogsTable.id, id));
-  await logActivity("registration", `${body.name} registered and anchored on the ZCR blockchain`, body.name, body.microchipId);
-  res.status(201).json(dogToApi(rows[0]!));
+    const rows = await db.select().from(dogsTable).where(eq(dogsTable.id, id));
+    await logActivity("registration", `${body.name} registered and anchored on the ZCR blockchain`, body.name, body.microchipId);
+    res.status(201).json(dogToApi(rows[0]!));
+  } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
+    console.error("Dog registration error:", error);
+    res.status(500).json({ error: "Internal server error during dog registration" });
+  }
 });
 
 // PATCH /dogs/:id
