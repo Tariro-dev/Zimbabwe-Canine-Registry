@@ -75,10 +75,10 @@ export default function Dashboard() {
               Welcome back, <span className="gold-text-gradient">{profile?.name?.split(' ')[0] || 'Member'}</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl">
-              {isRegulator ? "You have administrative oversight of the national registry." :
-               isVet ? "Access veterinary records and sign off on health certifications." :
-               isBreeder ? "Manage your kennel registrations and blockchain pedigree records." :
-               "Your registry is currently fully synchronized with the national blockchain."}
+              {isRegulator ? "You have administrative oversight of the national registry. Monitor compliance and verify blockchain integrity in real-time." :
+               isVet ? "Access veterinary records, sign off on health certifications, and update patient vaccination history on the ledger." :
+               isBreeder ? "Manage your kennel registrations, track litter history, and issue blockchain pedigree records for your dogs." :
+               "Your registry is currently fully synchronized with the national blockchain ledger. Track your canine assets with immutable records."}
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               {(isOwner || isBreeder) && (
@@ -199,11 +199,11 @@ export default function Dashboard() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="p-4 bg-white/5 rounded-2xl">
                    <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Peers</div>
-                   <div className="text-lg font-mono font-bold">12</div>
+                   <div className="text-lg font-mono font-bold">{10 + Math.floor(Math.random() * 15)}</div>
                 </div>
                 <div className="p-4 bg-white/5 rounded-2xl">
                    <div className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest mb-1">Latency</div>
-                   <div className="text-lg font-mono font-bold">14ms</div>
+                   <div className="text-lg font-mono font-bold">{10 + Math.floor(Math.random() * 20)}ms</div>
                 </div>
               </div>
               <Button
