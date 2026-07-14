@@ -140,13 +140,13 @@ router.post("/dogs", authenticate, requireVerified, authorize(['breeder', 'regul
 
     const rows = await db.select().from(dogsTable).where(eq(dogsTable.id, id));
     await logActivity("registration", `${body.name} registered and anchored on the ZCR blockchain`, body.name, body.microchipId, bc.txHash);
-    res.status(201).json(dogToApi(rows[0]!));
+    return res.status(201).json(dogToApi(rows[0]!));
   } catch (error: any) {
     if (error.name === "ZodError") {
       return res.status(400).json({ error: error.errors[0].message });
     }
     console.error("Dog registration error:", error);
-    res.status(500).json({ error: "Internal server error during dog registration" });
+    return res.status(500).json({ error: "Internal server error during dog registration" });
   }
 });
 
