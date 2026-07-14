@@ -375,10 +375,16 @@ export default function AddScreen() {
                 <TouchableOpacity
                   onPress={handleIdentifyBreed}
                   disabled={isIdentifying}
-                  style={[styles.aiBtn, { borderColor: colors.primary + '40', backgroundColor: colors.primary + '08' }]}
+                  style={[styles.aiBtn, { borderColor: colors.primary, backgroundColor: colors.primary + '10', overflow: 'hidden' }]}
                 >
-                  <MaterialCommunityIcons name="auto-fix" size={16} color={colors.primary} />
-                  <Text style={[styles.aiBtnText, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>
+                  <LinearGradient
+                    colors={[colors.primary + '30', 'transparent']}
+                    start={{ x: 0, y: 0 }}
+                    end={{ x: 1, y: 1 }}
+                    style={StyleSheet.absoluteFill}
+                  />
+                  <MaterialCommunityIcons name="auto-fix" size={18} color={colors.primary} />
+                  <Text style={[styles.aiBtnText, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>
                     {isIdentifying ? 'AI ANALYZING...' : 'AI BREED IDENTIFIER'}
                   </Text>
                 </TouchableOpacity>
