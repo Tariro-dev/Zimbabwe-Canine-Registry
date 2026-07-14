@@ -73,7 +73,10 @@ export function AppLayout({ children }: AppLayoutProps) {
 
             <div className="h-8 w-[1px] bg-border mx-2" />
 
-            <div className="flex items-center gap-3 group cursor-pointer">
+            <div
+              className="flex items-center gap-3 group cursor-pointer"
+              onClick={() => setLocation('/profile')}
+            >
               <div className="text-right hidden xl:block">
                 <div className="text-sm font-bold tracking-tight group-hover:text-primary transition-colors">
                   {profile?.name || 'Loading...'}
@@ -84,7 +87,7 @@ export function AppLayout({ children }: AppLayoutProps) {
               </div>
               <div className="relative">
                 <div className="w-10 h-10 rounded-xl bg-primary/10 border border-primary/20 flex items-center justify-center font-bold text-primary shadow-lg shadow-primary/5 group-hover:scale-105 transition-transform">
-                  {profile?.name ? profile.name.split(' ').map(n => n[0]).join('').toUpperCase() : <User className="w-5 h-5" />}
+                  {profile?.name ? profile.name.split(' ').map((n: string) => n[0]).join('').toUpperCase() : <User className="w-5 h-5" />}
                 </div>
                 <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-emerald-500 border-2 border-background rounded-full" />
               </div>

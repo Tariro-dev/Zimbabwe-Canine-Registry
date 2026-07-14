@@ -349,6 +349,14 @@ export async function customFetch<T = unknown>(
     headers.set("accept", DEFAULT_JSON_ACCEPT);
   }
 
+  // Inject x-user-id header if available in localStorage (simulated auth)
+  if (typeof window !== 'undefined') {
+    const userId = localStorage.getItem('zcr_user_id');
+    if (userId && !headers.has('x-user-id')) {
+      headers.set('x-user-id', userId);
+    }
+  }
+
   // Attach bearer token when an auth getter is configured and no
   // Authorization header has been explicitly provided.
   if (_authTokenGetter && !headers.has("authorization")) {

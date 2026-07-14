@@ -6,6 +6,7 @@ export const usersTable = pgTable("users", {
   email: text("email").notNull().unique(),
   passwordHash: text("password_hash").notNull(),
   phone: text("phone"),
+  nationalId: text("national_id"),
   role: text("role").notNull().default("owner"), // 'owner', 'breeder', 'vet', 'regulator'
   kennelName: text("kennel_name"),
   licenseNumber: text("license_number"),

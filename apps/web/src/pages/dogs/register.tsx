@@ -94,7 +94,16 @@ export default function RegisterDog() {
                 name="microchipId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Microchip ID (15-digit)</FormLabel>
+                    <FormLabel className="flex justify-between">
+                      Microchip ID (15-digit)
+                      <button
+                        type="button"
+                        onClick={() => field.onChange("900" + Math.floor(Math.random() * 1000000000000).toString().padStart(12, '0'))}
+                        className="text-[10px] text-primary hover:underline uppercase font-bold"
+                      >
+                        [Simulate Scan]
+                      </button>
+                    </FormLabel>
                     <FormControl><Input {...field} className="font-mono" placeholder="900XXXXXXXXXXXX" /></FormControl>
                     <FormMessage />
                   </FormItem>

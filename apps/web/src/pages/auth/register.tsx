@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Link, useLocation } from 'wouter';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { toast } from 'sonner';
 
 const steps = [
   { id: 1, name: 'Personal Details', icon: User },
@@ -15,12 +16,50 @@ const steps = [
 export default function Register() {
   const [step, setStep] = React.useState(1);
   const [, setLocation] = useLocation();
+  const [formData, setFormData] = React.useState({
+    name: '',
+    email: '',
+    phone: '',
+    nationalId: '',
+    role: 'owner',
+    password: '',
+    confirmPassword: ''
+  });
 
   const handleNext = () => setStep(s => Math.min(s + 1, 3));
   const handleBack = () => setStep(s => Math.max(s - 1, 1));
-  const handleSubmit = (e: React.FormEvent) => {
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setLocation('/dashboard');
+
+    if (formData.password !== formData.confirmPassword) {
+      toast.error("Passwords do not match");
+      return;
+    }
+
+    try {
+      const response = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Registration failed");
+      }
+
+      const user = await response.json();
+      localStorage.setItem('zcr_user_id', user.id);
+      toast.success("Registration successful!");
+      setLocation('/dashboard');
+    } catch (error: any) {
+      toast.error(error.message);
+    }
+  };
+
+  const updateField = (field: string, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }));
   };
 
   return (
@@ -72,14 +111,38 @@ export default function Register() {
                      className="space-y-6"
                    >
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                         <RegInput label="Full Name" placeholder="John Doe" icon={User} />
-                         <RegInput label="Email Address" placeholder="john@example.com" icon={Mail} />
-                         <RegInput label="Phone Number" placeholder="+263 7..." icon={Phone} />
-                         <RegInput label="National ID" placeholder="08-XXXXXX-X00" icon={ShieldCheck} />
+                         <RegInput
+                            label="Full Name"
+                            placeholder="John Doe"
+                            icon={User}
+                            value={formData.name}
+                            onChange={(e: any) => updateField('name', e.target.value)}
+                          />
+                         <RegInput
+                            label="Email Address"
+                            placeholder="john@example.com"
+                            icon={Mail}
+                            value={formData.email}
+                            onChange={(e: any) => updateField('email', e.target.value)}
+                          />
+                         <RegInput
+                            label="Phone Number"
+                            placeholder="+263 7..."
+                            icon={Phone}
+                            value={formData.phone}
+                            onChange={(e: any) => updateField('phone', e.target.value)}
+                          />
+                         <RegInput
+                            label="National ID"
+                            placeholder="08-XXXXXX-X00"
+                            icon={ShieldCheck}
+                            value={formData.nationalId}
+                            onChange={(e: any) => updateField('nationalId', e.target.value)}
+                          />
                       </div>
                       <div className="space-y-2">
                          <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Registry Role</label>
-                         <Select>
+                         <Select value={formData.role} onValueChange={(v) => updateField('role', v)}>
                             <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/30">
                                <SelectValue placeholder="Select your role" />
                             </SelectTrigger>
@@ -102,8 +165,22 @@ export default function Register() {
                      exit={{ opacity: 0, x: -20 }}
                      className="space-y-6"
                    >
-                      <RegInput label="Security Password" type="password" placeholder="••••••••••••" icon={Lock} />
-                      <RegInput label="Confirm Password" type="password" placeholder="••••••••••••" icon={Lock} />
+                      <RegInput
+                        label="Security Password"
+                        type="password"
+                        placeholder="••••••••••••"
+                        icon={Lock}
+                        value={formData.password}
+                        onChange={(e: any) => updateField('password', e.target.value)}
+                      />
+                      <RegInput
+                        label="Confirm Password"
+                        type="password"
+                        placeholder="••••••••••••"
+                        icon={Lock}
+                        value={formData.confirmPassword}
+                        onChange={(e: any) => updateField('confirmPassword', e.target.value)}
+                      />
                       <div className="p-6 bg-primary/5 border border-primary/20 rounded-3xl space-y-4">
                          <div className="flex items-center gap-3">
                             <ShieldCheck className="w-6 h-6 text-primary" />

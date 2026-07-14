@@ -29,6 +29,7 @@ import {
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 import { motion } from 'framer-motion';
+import { toast } from 'sonner';
 
 export default function Dashboard() {
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
@@ -50,6 +51,12 @@ export default function Dashboard() {
 
   if (!stats) return null;
 
+  // Role-based content customization
+  const isOwner = profile?.role === 'owner';
+  const isBreeder = profile?.role === 'breeder';
+  const isVet = profile?.role === 'vet';
+  const isRegulator = profile?.role === 'regulator';
+
   return (
     <div className="space-y-10">
       {/* Welcome Banner */}
@@ -61,18 +68,43 @@ export default function Dashboard() {
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
           <div className="space-y-4">
-            <Badge className="bg-primary/20 text-primary border-primary/30 py-1 px-4 rounded-full font-mono tracking-tighter uppercase">Member Portal</Badge>
+            <Badge className="bg-primary/20 text-primary border-primary/30 py-1 px-4 rounded-full font-mono tracking-tighter uppercase">
+              {profile?.role ? `${profile.role} Portal` : 'Member Portal'}
+            </Badge>
             <h1 className="text-4xl md:text-5xl font-bold tracking-tight">
               Welcome back, <span className="gold-text-gradient">{profile?.name?.split(' ')[0] || 'Member'}</span>
             </h1>
             <p className="text-muted-foreground text-lg max-w-xl">
-              Your registry is currently fully synchronized with the national blockchain. You have 3 pending tasks for this week.
+              {isRegulator ? "You have administrative oversight of the national registry." :
+               isVet ? "Access veterinary records and sign off on health certifications." :
+               isBreeder ? "Manage your kennel registrations and blockchain pedigree records." :
+               "Your registry is currently fully synchronized with the national blockchain."}
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
-              <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
-                <PlusCircle className="w-5 h-5" /> Register New Dog
-              </Button>
-              <Button variant="outline" className="rounded-2xl h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 gap-2">
+              {(isOwner || isBreeder) && (
+                <Link href="/dogs/register">
+                  <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
+                    <PlusCircle className="w-5 h-5" /> Register New Dog
+                  </Button>
+                </Link>
+              )}
+              {isVet && (
+                <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
+                  <FileCheck className="w-5 h-5" /> Verify Health Record
+                </Button>
+              )}
+              {isRegulator && (
+                <Link href="/regulator">
+                  <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
+                    <Activity className="w-5 h-5" /> Admin Dashboard
+                  </Button>
+                </Link>
+              )}
+              <Button
+                variant="outline"
+                className="rounded-2xl h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 gap-2"
+                onClick={() => toast.info("Certificate generation module is initializing...")}
+              >
                 <FileCheck className="w-5 h-5" /> Generate Certificates
               </Button>
             </div>
@@ -88,7 +120,7 @@ export default function Dashboard() {
       {/* Stat Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         <StatCard 
-          title="My Registered Dogs"
+          title={isVet ? "Patients Verified" : isRegulator ? "Total Registered" : "My Registered Dogs"}
           value={stats.totalDogs}
           icon={Dog}
           trend="+2 this month"
@@ -108,7 +140,7 @@ export default function Dashboard() {
           trendPositive={false}
         />
         <StatCard 
-          title="Certificates Issued"
+          title={isVet ? "Vaccines Issued" : "Certificates Issued"}
           value={stats.totalLitters}
           icon={ShieldCheck}
           description="Official Status"
@@ -174,7 +206,10 @@ export default function Dashboard() {
                    <div className="text-lg font-mono font-bold">14ms</div>
                 </div>
               </div>
-              <Button className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all">
+              <Button
+                className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+                onClick={() => toast.success("Accessing National Canine Blockchain Ledger...")}
+              >
                 Blockchain Explorer
               </Button>
             </CardContent>

@@ -56,8 +56,16 @@ export default function Verify() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Microchip Search */}
         <Card className="md:col-span-2 shadow-lg border-primary/20">
-          <CardHeader>
+          <CardHeader className="flex flex-row items-center justify-between">
             <CardTitle className="text-sm font-semibold uppercase text-muted-foreground tracking-wider">Quick Microchip Look-up</CardTitle>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-[10px] text-primary font-bold gap-1"
+              onClick={() => setQuery("900012345678901")}
+            >
+              <ScanLine className="w-3 h-3" /> Simulate Microchip Scan
+            </Button>
           </CardHeader>
           <CardContent className="space-y-6">
             <form onSubmit={handleSearch} className="flex gap-4">
@@ -65,13 +73,13 @@ export default function Verify() {
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-muted-foreground" />
                 <Input
                   placeholder="Enter 15-digit Microchip ID"
-                  className="pl-12 h-14 text-lg font-mono tracking-widest bg-muted/50"
+                  className="pl-12 h-14 text-lg font-mono tracking-widest bg-white/10 border-white/20 focus:bg-white/20 focus:border-primary/50 text-white placeholder:text-white/40 transition-all"
                   value={query}
                   onChange={(e) => setQuery(e.target.value)}
                   maxLength={15}
                 />
               </div>
-              <Button type="submit" size="lg" className="h-14 px-8" disabled={isLoading || !query}>
+              <Button type="submit" size="lg" className="h-14 px-8 bg-primary hover:bg-primary/90 text-black font-bold" disabled={isLoading || !query}>
                 {isLoading ? "Checking..." : "Verify"}
               </Button>
             </form>
