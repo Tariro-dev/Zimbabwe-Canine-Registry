@@ -6,6 +6,7 @@ export const activityLogTable = pgTable("activity_log", {
   dogName: text("dog_name"),
   microchipId: text("microchip_id"),
   description: text("description").notNull(),
+  txHash: text("tx_hash"),
   timestamp: text("timestamp").notNull(),
 });
 

@@ -38,6 +38,7 @@ router.get("/stats/dashboard", async (_req, res) => {
     dogName: a.dogName ?? null,
     microchipId: a.microchipId ?? null,
     description: a.description,
+    txHash: a.txHash ?? null,
     timestamp: a.timestamp,
   }));
 

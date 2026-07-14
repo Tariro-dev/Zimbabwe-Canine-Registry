@@ -26,6 +26,7 @@ async function logActivity(
   description: string,
   dogName?: string | null,
   microchipId?: string | null,
+  txHash?: string | null,
 ) {
   await db.insert(activityLogTable).values({
     id: genId(),
@@ -33,6 +34,7 @@ async function logActivity(
     dogName: dogName ?? null,
     microchipId: microchipId ?? null,
     description,
+    txHash: txHash ?? null,
     timestamp: nowIso(),
   });
 }
@@ -137,7 +139,7 @@ router.post("/dogs", authenticate, requireVerified, authorize(['breeder', 'regul
     });
 
     const rows = await db.select().from(dogsTable).where(eq(dogsTable.id, id));
-    await logActivity("registration", `${body.name} registered and anchored on the ZCR blockchain`, body.name, body.microchipId);
+    await logActivity("registration", `${body.name} registered and anchored on the ZCR blockchain`, body.name, body.microchipId, bc.txHash);
     res.status(201).json(dogToApi(rows[0]!));
   } catch (error: any) {
     if (error.name === "ZodError") {
@@ -201,7 +203,7 @@ router.post("/dogs/:id/toggle-stolen", authenticate, async (req: AuthRequest, re
   await db.update(dogsTable).set({ isStolen: newStolen }).where(eq(dogsTable.id, id));
   const updated = await db.select().from(dogsTable).where(eq(dogsTable.id, id));
   const action = newStolen ? "flagged as stolen" : "stolen flag removed";
-  await logActivity("stolen_flag", `${dog.name} ${action}`, dog.name, dog.microchipId);
+  await logActivity("stolen_flag", `${dog.name} ${action}`, dog.name, dog.microchipId, null);
   res.json(dogToApi(updated[0]!));
 });
 
@@ -219,7 +221,7 @@ router.patch("/dogs/:id/health", authenticate, authorize(['vet', 'regulator']), 
   }).where(eq(dogsTable.id, id));
 
   const updated = await db.select().from(dogsTable).where(eq(dogsTable.id, id));
-  await logActivity("health_update", `Health records updated for ${rows[0].name}`, rows[0].name, rows[0].microchipId);
+  await logActivity("health_update", `Health records updated for ${rows[0].name}`, rows[0].name, rows[0].microchipId, null);
   res.json(dogToApi(updated[0]!));
 });
 
@@ -234,7 +236,7 @@ router.post("/dogs/:id/transfer", async (req, res) => {
     ownerName: body.newOwnerName,
   }).where(eq(dogsTable.id, id));
   const updated = await db.select().from(dogsTable).where(eq(dogsTable.id, id));
-  await logActivity("transfer", `${rows[0].name} transferred to ${body.newOwnerName}`, rows[0].name, rows[0].microchipId);
+  await logActivity("transfer", `${rows[0].name} transferred to ${body.newOwnerName}`, rows[0].name, rows[0].microchipId, null);
   res.json(dogToApi(updated[0]!));
 });
 

@@ -50,6 +50,7 @@ router.post("/litters", authenticate, requireVerified, authorize(['breeder', 're
       dogName: null,
       microchipId: body.dameMicrochip,
       description: `Litter pre-registered by ${user.name} (dame: ${body.dameMicrochip})`,
+      txHash: null,
       timestamp: nowIso(),
     });
 

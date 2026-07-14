@@ -687,6 +687,7 @@ components:
         description: { type: string }
         timestamp: { type: string }
         dogName: { type: ["string", "null"] }
+        txHash: { type: ["string", "null"] }
       required: [id, type, description, timestamp]
 
     UserProfile:
