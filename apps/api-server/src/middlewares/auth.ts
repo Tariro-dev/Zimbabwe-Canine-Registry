@@ -1,25 +1,45 @@
 import type { Request, Response, NextFunction } from "express";
 import { db, usersTable } from "@workspace/db";
 import { eq } from "drizzle-orm";
+import jwt from "jsonwebtoken";
+
+const JWT_SECRET = process.env.JWT_SECRET || "zcr-national-secret-key-2024";
 
 export interface AuthRequest extends Request {
   user?: any;
 }
 
 export const authenticate = async (req: AuthRequest, res: Response, next: NextFunction) => {
-  // In a real app, we'd verify a JWT here.
-  // For this implementation, we'll use a 'x-user-id' header to simulate a logged-in user.
-  const userId = req.headers["x-user-id"] as string || "user-001";
+  try {
+    const authHeader = req.headers.authorization;
+    if (!authHeader?.startsWith("Bearer ")) {
+      // Fallback for dev testing if x-user-id is still used, but prefer Bearer token
+      const devUserId = req.headers["x-user-id"] as string;
+      if (devUserId && process.env.NODE_ENV !== "production") {
+        const userRows = await db.select().from(usersTable).where(eq(usersTable.id, devUserId));
+        if (userRows[0]) {
+          req.user = userRows[0];
+          return next();
+        }
+      }
+      return res.status(401).json({ error: "Unauthorized: Missing token" });
+    }
 
-  const userRows = await db.select().from(usersTable).where(eq(usersTable.id, userId));
-  const user = userRows[0];
+    const token = authHeader.split(" ")[1];
+    const decoded = jwt.verify(token, JWT_SECRET) as any;
 
-  if (!user) {
-    return res.status(401).json({ error: "Unauthorized" });
+    const userRows = await db.select().from(usersTable).where(eq(usersTable.id, decoded.id));
+    const user = userRows[0];
+
+    if (!user) {
+      return res.status(401).json({ error: "Unauthorized: User not found" });
+    }
+
+    req.user = user;
+    next();
+  } catch (error) {
+    return res.status(401).json({ error: "Unauthorized: Invalid token" });
   }
-
-  req.user = user;
-  return next();
 };
 
 export const authorize = (roles: string[]) => {
