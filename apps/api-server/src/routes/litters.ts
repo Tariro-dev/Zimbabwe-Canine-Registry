@@ -55,13 +55,13 @@ router.post("/litters", authenticate, requireVerified, authorize(['breeder', 're
     });
 
     const rows = await db.select().from(littersTable).where(eq(littersTable.id, id));
-    res.status(201).json(rows[0]);
+    return res.status(201).json(rows[0]);
   } catch (error: any) {
     if (error.name === "ZodError") {
       return res.status(400).json({ error: error.errors[0].message });
     }
     console.error("Litter registration error:", error);
-    res.status(500).json({ error: "Internal server error during litter registration" });
+    return res.status(500).json({ error: "Internal server error during litter registration" });
   }
 });
 
@@ -127,7 +127,7 @@ router.post("/litters/:id/register-puppies", authenticate, requireVerified, asyn
       return res.status(400).json({ error: error.errors[0].message });
     }
     console.error("Puppy registration error:", error);
-    res.status(500).json({ error: "Internal server error during puppy registration" });
+    return res.status(500).json({ error: "Internal server error during puppy registration" });
   }
 });
 

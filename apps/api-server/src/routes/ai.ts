@@ -47,7 +47,7 @@ router.post("/ai/identify-breed", authenticate, async (req, res) => {
     confidence: parseFloat((p.confidence / totalConfidence).toFixed(4))
   }));
 
-  res.json({ predictions: normalized });
+  return res.json({ predictions: normalized });
 });
 
 export default router;

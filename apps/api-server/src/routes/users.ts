@@ -58,7 +58,7 @@ router.post("/login", authLimiter, async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.json({
+    return res.json({
       token,
       user: {
         id: user.id,
@@ -72,7 +72,7 @@ router.post("/login", authLimiter, async (req, res) => {
       return res.status(400).json({ error: error.errors[0].message });
     }
     console.error("Login error:", error);
-    res.status(500).json({ error: "Internal server error during login" });
+    return res.status(500).json({ error: "Internal server error during login" });
   }
 });
 
@@ -117,7 +117,7 @@ router.post("/register", registerLimiter, async (req, res) => {
       { expiresIn: "7d" }
     );
 
-    res.status(201).json({
+    return res.status(201).json({
       token,
       user: {
         id: newUser.id,
@@ -132,7 +132,7 @@ router.post("/register", registerLimiter, async (req, res) => {
       return res.status(400).json({ error: error.errors[0].message });
     }
     console.error("Registration error:", error);
-    res.status(500).json({ error: "Internal server error during registration" });
+    return res.status(500).json({ error: "Internal server error during registration" });
   }
 });
 
@@ -154,7 +154,7 @@ router.get("/verify-email", async (req, res) => {
     .set({ isEmailVerified: true, verificationToken: null })
     .where(eq(usersTable.id, user.id));
 
-  res.json({ message: "Email verified successfully. You can now access all features." });
+  return res.json({ message: "Email verified successfully. You can now access all features." });
 });
 
 // PATCH /users/me
@@ -172,7 +172,7 @@ router.patch("/users/me", authenticate, async (req: any, res) => {
 
     const updated = await db.select().from(usersTable).where(eq(usersTable.id, userId));
     const u = updated[0]!;
-    res.json({
+    return res.json({
       id: u.id,
       name: u.name,
       role: u.role,
@@ -185,7 +185,7 @@ router.patch("/users/me", authenticate, async (req: any, res) => {
       return res.status(400).json({ error: error.errors[0].message });
     }
     console.error("Profile update error:", error);
-    res.status(500).json({ error: "Internal server error during profile update" });
+    return res.status(500).json({ error: "Internal server error during profile update" });
   }
 });
 
