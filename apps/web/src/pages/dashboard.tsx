@@ -64,7 +64,7 @@ export default function Dashboard() {
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
-        className="relative overflow-hidden rounded-[2rem] bg-[#050505] border border-primary/20 p-8 md:p-12 shadow-2xl shadow-primary/5"
+        className="relative overflow-hidden rounded-[2rem] obsidian-card p-8 md:p-12 shadow-2xl shadow-primary/5"
       >
         <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-primary/10 to-transparent pointer-events-none" />
         <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-8">
@@ -242,7 +242,7 @@ export default function Dashboard() {
 
 function StatCard({ title, value, icon: Icon, trend, trendPositive, description }: any) {
   return (
-    <Card className="bg-card/30 border-white/5 rounded-[2rem] hover:border-primary/30 transition-all group overflow-hidden">
+    <Card className="obsidian-card rounded-[2rem] hover:border-primary/30 transition-all group overflow-hidden">
       <CardContent className="p-8">
         <div className="flex items-center justify-between mb-6">
            <div className="w-12 h-12 rounded-2xl bg-white/5 flex items-center justify-center text-muted-foreground group-hover:bg-primary/10 group-hover:text-primary transition-all">
