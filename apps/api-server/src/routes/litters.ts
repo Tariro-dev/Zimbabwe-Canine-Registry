@@ -27,8 +27,9 @@ router.get("/litters/:id", async (req, res) => {
 });
 
 // POST /litters
-router.post("/litters", authenticate, async (req: AuthRequest, res) => {
-  const body = CreateLitterBody.parse(req.body);
+router.post("/litters", authenticate, requireVerified, authorize(['breeder', 'regulator']), async (req: AuthRequest, res) => {
+  try {
+    const body = CreateLitterBody.parse(req.body);
   const user = req.user!;
   const id = genId();
   const regAt = today();
@@ -57,8 +58,9 @@ router.post("/litters", authenticate, async (req: AuthRequest, res) => {
 });
 
 // POST /litters/:id/register-puppies (Litter Management Workflow)
-router.post("/litters/:id/register-puppies", authenticate, async (req: AuthRequest, res) => {
-  const id = req.params.id as string;
+router.post("/litters/:id/register-puppies", authenticate, requireVerified, async (req: AuthRequest, res) => {
+  try {
+    const id = req.params.id as string;
   const puppies = req.body.puppies as any[]; // Array of { name, gender, color, microchipId }
   const user = req.user!;
 
@@ -110,8 +112,15 @@ router.post("/litters/:id/register-puppies", authenticate, async (req: AuthReque
     results.push(dogId);
   }
 
-  res.status(201).json({ registeredCount: results.length, dogIds: results });
-  return;
+    res.status(201).json({ registeredCount: results.length, dogIds: results });
+    return;
+  } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
+    console.error("Puppy registration error:", error);
+    res.status(500).json({ error: "Internal server error during puppy registration" });
+  }
 });
 
 export default router;

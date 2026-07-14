@@ -159,26 +159,34 @@ router.get("/verify-email", async (req, res) => {
 
 // PATCH /users/me
 router.patch("/users/me", authenticate, async (req: any, res) => {
-  const body = UpdateMyProfileBody.parse(req.body);
-  const userId = req.user.id;
+  try {
+    const body = UpdateMyProfileBody.parse(req.body);
+    const userId = req.user.id;
 
-  const updates: Partial<typeof usersTable.$inferInsert> = {};
-  if (body.name !== undefined) updates.name = body.name;
-  if (body.kennelName !== undefined) updates.kennelName = body.kennelName;
-  if (body.licenseNumber !== undefined) updates.licenseNumber = body.licenseNumber;
+    const updates: Partial<typeof usersTable.$inferInsert> = {};
+    if (body.name !== undefined) updates.name = body.name;
+    if (body.kennelName !== undefined) updates.kennelName = body.kennelName;
+    if (body.licenseNumber !== undefined) updates.licenseNumber = body.licenseNumber;
 
-  await db.update(usersTable).set(updates).where(eq(usersTable.id, userId));
+    await db.update(usersTable).set(updates).where(eq(usersTable.id, userId));
 
-  const updated = await db.select().from(usersTable).where(eq(usersTable.id, userId));
-  const u = updated[0]!;
-  res.json({
-    id: u.id,
-    name: u.name,
-    role: u.role,
-    kennelName: u.kennelName ?? null,
-    licenseNumber: u.licenseNumber ?? null,
-    registeredAt: u.registeredAt
-  });
+    const updated = await db.select().from(usersTable).where(eq(usersTable.id, userId));
+    const u = updated[0]!;
+    res.json({
+      id: u.id,
+      name: u.name,
+      role: u.role,
+      kennelName: u.kennelName ?? null,
+      licenseNumber: u.licenseNumber ?? null,
+      registeredAt: u.registeredAt
+    });
+  } catch (error: any) {
+    if (error.name === "ZodError") {
+      return res.status(400).json({ error: error.errors[0].message });
+    }
+    console.error("Profile update error:", error);
+    res.status(500).json({ error: "Internal server error during profile update" });
+  }
 });
 
 export default router;
