@@ -4,6 +4,7 @@ import { db, usersTable } from "@workspace/db";
 import { UpdateMyProfileBody } from "@workspace/api-zod";
 import { authenticate } from "../middlewares/auth";
 import { genId } from "../lib/helpers";
+import bcrypt from "bcryptjs";
 
 const router: IRouter = Router();
 
@@ -25,37 +26,45 @@ router.get("/users/me", authenticate, async (req: any, res) => {
 
 // POST /register
 router.post("/register", async (req, res) => {
-  const { name, email, password, phone, nationalId, role, province } = req.body;
+  try {
+    const { name, email, password, phone, nationalId, role, province } = req.body;
 
-  if (!name || !email || !password || !role) {
-    return res.status(400).json({ error: "Missing required fields" });
+    if (!name || !email || !password || !role) {
+      return res.status(400).json({ error: "Missing required fields" });
+    }
+
+    // Check if user already exists
+    const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    if (existing.length > 0) {
+      return res.status(400).json({ error: "User with this email already exists" });
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const passwordHash = await bcrypt.hash(password, salt);
+
+    const newUser = {
+      id: genId(),
+      name,
+      email,
+      passwordHash,
+      phone,
+      nationalId,
+      role,
+      province,
+      registeredAt: new Date(),
+    };
+
+    await db.insert(usersTable).values(newUser);
+
+    res.status(201).json({
+      id: newUser.id,
+      name: newUser.name,
+      role: newUser.role
+    });
+  } catch (error: any) {
+    console.error("Registration error:", error);
+    res.status(500).json({ error: "Internal server error during registration" });
   }
-
-  // Check if user already exists
-  const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
-  if (existing.length > 0) {
-    return res.status(400).json({ error: "User with this email already exists" });
-  }
-
-  const newUser = {
-    id: genId(),
-    name,
-    email,
-    passwordHash: password, // In real app, hash this!
-    phone,
-    nationalId,
-    role,
-    province,
-    registeredAt: new Date(),
-  };
-
-  await db.insert(usersTable).values(newUser);
-
-  res.status(201).json({
-    id: newUser.id,
-    name: newUser.name,
-    role: newUser.role
-  });
 });
 
 // PATCH /users/me
