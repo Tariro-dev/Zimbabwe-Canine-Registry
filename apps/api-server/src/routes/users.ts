@@ -3,13 +3,19 @@ import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import { UpdateMyProfileBody, RegisterUserBody, LoginUserBody } from "@workspace/api-zod";
 import { authenticate } from "../middlewares/auth";
+import { rateLimit } from "../middlewares/rate-limit";
 import { genId } from "../lib/helpers";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import crypto from "node:crypto";
 
 const router: IRouter = Router();
 
 const JWT_SECRET = process.env.JWT_SECRET || "zcr-national-secret-key-2024";
+
+// Rate limiters
+const authLimiter = rateLimit(15 * 60 * 1000, 5); // 5 attempts per 15 minutes
+const registerLimiter = rateLimit(60 * 60 * 1000, 3); // 3 registrations per hour
 
 // GET /users/me
 router.get("/users/me", authenticate, async (req: any, res) => {
@@ -23,12 +29,13 @@ router.get("/users/me", authenticate, async (req: any, res) => {
     role: u.role,
     kennelName: u.kennelName ?? null,
     licenseNumber: u.licenseNumber ?? null,
+    isEmailVerified: u.isEmailVerified,
     registeredAt: u.registeredAt
   });
 });
 
 // POST /login
-router.post("/login", async (req, res) => {
+router.post("/login", authLimiter, async (req, res) => {
   try {
     const body = LoginUserBody.parse(req.body);
     const { email, password } = body;
@@ -56,7 +63,8 @@ router.post("/login", async (req, res) => {
       user: {
         id: user.id,
         name: user.name,
-        role: user.role
+        role: user.role,
+        isEmailVerified: user.isEmailVerified
       }
     });
   } catch (error: any) {
@@ -69,7 +77,7 @@ router.post("/login", async (req, res) => {
 });
 
 // POST /register
-router.post("/register", async (req, res) => {
+router.post("/register", registerLimiter, async (req, res) => {
   try {
     const body = RegisterUserBody.parse(req.body);
     const { name, email, password, phone, nationalId, role, province } = body;
@@ -82,6 +90,7 @@ router.post("/register", async (req, res) => {
 
     const salt = await bcrypt.genSalt(10);
     const passwordHash = await bcrypt.hash(password, salt);
+    const verificationToken = crypto.randomBytes(32).toString("hex");
 
     const newUser = {
       id: genId(),
@@ -92,10 +101,15 @@ router.post("/register", async (req, res) => {
       nationalId,
       role,
       province,
+      verificationToken,
+      isEmailVerified: false,
       registeredAt: new Date(),
     };
 
     await db.insert(usersTable).values(newUser);
+
+    // TODO: Send verification email here
+    console.log(`Verification token for ${email}: ${verificationToken}`);
 
     const token = jwt.sign(
       { id: newUser.id, email: newUser.email, role: newUser.role },
@@ -108,8 +122,10 @@ router.post("/register", async (req, res) => {
       user: {
         id: newUser.id,
         name: newUser.name,
-        role: newUser.role
-      }
+        role: newUser.role,
+        isEmailVerified: false
+      },
+      message: "Registration successful. Please check your email for verification link."
     });
   } catch (error: any) {
     if (error.name === "ZodError") {
@@ -118,6 +134,27 @@ router.post("/register", async (req, res) => {
     console.error("Registration error:", error);
     res.status(500).json({ error: "Internal server error during registration" });
   }
+});
+
+// GET /verify-email?token=...
+router.get("/verify-email", async (req, res) => {
+  const { token } = req.query;
+  if (!token || typeof token !== "string") {
+    return res.status(400).json({ error: "Invalid verification token" });
+  }
+
+  const userRows = await db.select().from(usersTable).where(eq(usersTable.verificationToken, token));
+  const user = userRows[0];
+
+  if (!user) {
+    return res.status(400).json({ error: "Invalid or expired verification token" });
+  }
+
+  await db.update(usersTable)
+    .set({ isEmailVerified: true, verificationToken: null })
+    .where(eq(usersTable.id, user.id));
+
+  res.json({ message: "Email verified successfully. You can now access all features." });
 });
 
 // PATCH /users/me

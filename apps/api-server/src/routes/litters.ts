@@ -7,7 +7,7 @@ import {
   DeleteLitterParams,
 } from "@workspace/api-zod";
 import { genId, today, nowIso, genCertNumber } from "../lib/helpers";
-import { authenticate, type AuthRequest } from "../middlewares/auth";
+import { authenticate, authorize, requireVerified, type AuthRequest } from "../middlewares/auth";
 import { anchorCanineRecord } from "../lib/blockchain";
 
 const router: IRouter = Router();

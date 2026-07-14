@@ -50,3 +50,10 @@ export const authorize = (roles: string[]) => {
     return next();
   };
 };
+
+export const requireVerified = (req: AuthRequest, res: Response, next: NextFunction) => {
+  if (!req.user || !req.user.isEmailVerified) {
+    return res.status(403).json({ error: "Forbidden: Email verification required" });
+  }
+  return next();
+};

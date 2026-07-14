@@ -16,7 +16,7 @@ import {
 } from "@workspace/api-zod";
 import { genId, genTxHash, today, nowIso, genCertNumber, dogToApi } from "../lib/helpers";
 import { activityLogTable } from "@workspace/db";
-import { authenticate, authorize, type AuthRequest } from "../middlewares/auth";
+import { authenticate, authorize, requireVerified, type AuthRequest } from "../middlewares/auth";
 import { anchorCanineRecord } from "../lib/blockchain";
 
 const router: IRouter = Router();
@@ -91,7 +91,7 @@ router.get("/dogs/:id", async (req, res) => {
 });
 
 // POST /dogs
-router.post("/dogs", authenticate, authorize(['breeder', 'regulator']), async (req: AuthRequest, res) => {
+router.post("/dogs", authenticate, requireVerified, authorize(['breeder', 'regulator']), async (req: AuthRequest, res) => {
   try {
     const body = CreateDogBody.parse(req.body);
     const user = req.user!;
