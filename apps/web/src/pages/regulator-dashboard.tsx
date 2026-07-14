@@ -33,12 +33,14 @@ import { Badge } from '@/components/ui/badge';
 const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884d8'];
 
 export default function RegulatorDashboard() {
-  // We'll use a manual fetch since we didn't add this to the generated client hooks yet
+  const { data: profile } = useGetMyProfile();
+
   const { data: stats, isLoading } = useQuery({
-    queryKey: ['regulatorStats'],
+    queryKey: ['regulatorStats', profile?.id],
+    enabled: !!profile?.id,
     queryFn: async () => {
       const res = await fetch('/api/stats/regulator', {
-        headers: { 'x-user-id': 'user-regulator' } // Simulate regulator role
+        headers: { 'x-user-id': profile!.id }
       });
       return res.json();
     }
