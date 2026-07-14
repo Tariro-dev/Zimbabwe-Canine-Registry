@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import { db, usersTable } from "@workspace/db";
 import { UpdateMyProfileBody } from "@workspace/api-zod";
 import { authenticate } from "../middlewares/auth";
-import { v4 as uuidv4 } from 'uuid';
+import { genId } from "../lib/helpers";
 
 const router: IRouter = Router();
 
@@ -38,7 +38,7 @@ router.post("/register", async (req, res) => {
   }
 
   const newUser = {
-    id: uuidv4(),
+    id: genId(),
     name,
     email,
     passwordHash: password, // In real app, hash this!

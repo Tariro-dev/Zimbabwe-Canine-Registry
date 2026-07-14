@@ -14,8 +14,8 @@ interface AppLayoutProps {
 }
 
 export function AppLayout({ children }: AppLayoutProps) {
-  const [location] = useLocation();
-  const { theme, setTheme } = useTheme();
+  const [location, setLocation] = useLocation();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const { data: profile } = useGetMyProfile();
 
   const pageTitle = React.useMemo(() => {
@@ -61,9 +61,9 @@ export function AppLayout({ children }: AppLayoutProps) {
                 variant="ghost"
                 size="icon"
                 className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors"
-                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                onClick={() => setTheme(resolvedTheme === 'dark' ? 'light' : 'dark')}
               >
-                {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                {resolvedTheme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
               </Button>
               <Button variant="ghost" size="icon" className="rounded-xl hover:bg-primary/10 hover:text-primary transition-colors">
                 <Mail className="w-5 h-5" />
