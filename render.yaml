@@ -17,7 +17,7 @@ services:
         value: 10000
 
   # 2. The Web Frontend (Static Site)
-  - type: static_site
+  - type: static
     name: zcr-web
     buildCommand: pnpm install && pnpm --filter @workspace/web run build
     publishDir: apps/web/dist/public
