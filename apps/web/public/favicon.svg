@@ -1,9 +1,31 @@
 <svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#D4AF37;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#F5E050;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#B8860B;stop-opacity:1" />
+    </linearGradient>
+  </defs>
   <rect width="512" height="512" rx="128" fill="#0A0A0A"/>
-  <path d="M256 220C200 220 160 270 160 340C160 410 200 460 256 460C312 460 352 410 352 340C352 270 312 220 256 220Z" fill="#D4AF37"/>
-  <circle cx="110" cy="280" r="45" fill="#D4AF37"/>
-  <circle cx="200" cy="150" r="50" fill="#D4AF37"/>
-  <circle cx="312" cy="150" r="50" fill="#D4AF37"/>
-  <circle cx="402" cy="280" r="45" fill="#D4AF37"/>
-  <path d="M256 290C240 290 230 300 220 320C215 330 215 350 225 370C235 390 277 390 287 370C297 350 297 330 292 320C282 300 272 290 256 290Z" fill="#0A0A0A"/>
+
+  <!-- Main Paw Pad -->
+  <path d="M256 220C180 220 140 280 140 360C140 440 190 480 256 480C322 480 372 440 372 360C372 280 332 220 256 220Z" fill="url(#goldGradient)"/>
+
+  <!-- Dog Head Silhouette inside Main Pad -->
+  <path d="M256 300
+           C245 300 230 310 220 340
+           C210 370 210 400 230 430
+           C240 445 272 445 282 430
+           C302 400 302 370 292 340
+           C282 310 267 300 256 300 Z" fill="#0A0A0A" />
+  <!-- Ear 1 -->
+  <path d="M245 315 L235 270 L225 315 Z" fill="#0A0A0A" />
+  <!-- Ear 2 -->
+  <path d="M267 315 L277 270 L287 315 Z" fill="#0A0A0A" />
+
+  <!-- Smaller Pads -->
+  <ellipse cx="110" cy="280" rx="45" ry="65" fill="url(#goldGradient)" transform="rotate(-25, 110, 280)"/>
+  <ellipse cx="205" cy="150" rx="48" ry="75" fill="url(#goldGradient)" transform="rotate(-10, 205, 150)"/>
+  <ellipse cx="307" cy="150" rx="48" ry="75" fill="url(#goldGradient)" transform="rotate(10, 307, 150)"/>
+  <ellipse cx="402" cy="280" rx="45" ry="65" fill="url(#goldGradient)" transform="rotate(25, 402, 280)"/>
 </svg>

@@ -535,9 +535,14 @@ export default function Landing() {
           </div>
 
           <div className="border-t border-white/5 pt-12 flex flex-col md:flex-row items-center justify-between gap-6">
-            <p className="text-xs text-muted-foreground font-mono">
-              &copy; {new Date().getFullYear()} ZIMBABWE CANINE REGISTRY. ALL RIGHTS RESERVED.
-            </p>
+            <div className="text-left">
+              <p className="text-xs text-muted-foreground font-mono">
+                &copy; {new Date().getFullYear()} ZIMBABWE CANINE REGISTRY. ALL RIGHTS RESERVED.
+              </p>
+              <p className="text-[10px] text-white/20 font-mono mt-1 uppercase tracking-widest">
+                canineregistry.co.zw • Hosted by GetHost Africa
+              </p>
+            </div>
             <div className="flex items-center gap-8 text-xs font-mono uppercase tracking-widest text-muted-foreground">
               <a href="#" className="hover:text-primary">Terms</a>
               <a href="#" className="hover:text-primary">Privacy</a>
