@@ -32,6 +32,7 @@ import { motion } from 'framer-motion';
 import { toast } from 'sonner';
 
 export default function Dashboard() {
+  const [, setLocation] = useLocation();
   const { data: stats, isLoading: statsLoading } = useGetDashboardStats();
   const { data: recentDogs, isLoading: dogsLoading } = useListRecentDogs();
   const { data: profile } = useGetMyProfile();
@@ -82,11 +83,12 @@ export default function Dashboard() {
             </p>
             <div className="flex flex-wrap gap-4 pt-4">
               {(isOwner || isBreeder) && (
-                <Link href="/dogs/register">
-                  <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
-                    <PlusCircle className="w-5 h-5" /> Register New Dog
-                  </Button>
-                </Link>
+                <Button
+                  className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2"
+                  onClick={() => setLocation('/dogs/register')}
+                >
+                  <PlusCircle className="w-5 h-5" /> Register New Dog
+                </Button>
               )}
               {isVet && (
                 <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
@@ -94,20 +96,20 @@ export default function Dashboard() {
                 </Button>
               )}
               {isRegulator && (
-                <Link href="/regulator">
-                  <Button className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2">
-                    <Activity className="w-5 h-5" /> Admin Dashboard
-                  </Button>
-                </Link>
-              )}
-              <Link href="/dogs">
                 <Button
-                  variant="outline"
-                  className="rounded-2xl h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 gap-2"
+                  className="rounded-2xl h-12 px-6 bg-primary hover:bg-primary/90 text-black font-bold gap-2"
+                  onClick={() => setLocation('/regulator')}
                 >
-                  <FileCheck className="w-5 h-5" /> Generate Certificates
+                  <Activity className="w-5 h-5" /> Admin Dashboard
                 </Button>
-              </Link>
+              )}
+              <Button
+                variant="outline"
+                className="rounded-2xl h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 gap-2"
+                onClick={() => setLocation('/dogs')}
+              >
+                <FileCheck className="w-5 h-5" /> Generate Certificates
+              </Button>
             </div>
           </div>
           <div className="hidden lg:block">
@@ -207,13 +209,12 @@ export default function Dashboard() {
                    <div className="text-lg font-mono font-bold">{10 + Math.floor(Math.random() * 20)}ms</div>
                 </div>
               </div>
-              <Link href="/audit-log">
-                <Button
-                  className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
-                >
-                  Blockchain Explorer
-                </Button>
-              </Link>
+              <Button
+                className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+                onClick={() => setLocation('/audit-log')}
+              >
+                Blockchain Explorer
+              </Button>
             </CardContent>
           </Card>
 

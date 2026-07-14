@@ -163,11 +163,11 @@ export default function DogDetail({ id }: { id: string }) {
                      <h3 className="text-xs font-bold uppercase tracking-[0.3em] mb-4 opacity-70">Current Owner</h3>
                      <div className="flex items-center gap-4 mb-6">
                         <div className="w-16 h-16 rounded-2xl bg-black/10 flex items-center justify-center font-bold text-2xl">
-                           {dog.ownerName.charAt(0)}
+                           {(dog.ownerName || 'O').charAt(0)}
                         </div>
                         <div>
-                           <div className="text-xl font-bold leading-tight">{dog.ownerName}</div>
-                           <div className="text-sm font-medium opacity-70">Registered since {format(new Date(dog.registrationDate), 'yyyy')}</div>
+                           <div className="text-xl font-bold leading-tight">{dog.ownerName || 'Unknown Owner'}</div>
+                           <div className="text-sm font-medium opacity-70">Registered since {formatSafeDate(dog.registrationDate, 'yyyy')}</div>
                         </div>
                      </div>
                      <Button className="w-full bg-black text-white hover:bg-black/90 rounded-xl h-12 font-bold">Contact Owner</Button>
@@ -177,10 +177,10 @@ export default function DogDetail({ id }: { id: string }) {
                      <h3 className="text-xs font-bold uppercase tracking-[0.3em] text-muted-foreground mb-4">Breeder Attribution</h3>
                      <div className="flex items-center gap-4">
                         <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center font-bold text-primary">
-                           {dog.breederName.charAt(0)}
+                           {(dog.breederName || 'B').charAt(0)}
                         </div>
                         <div>
-                           <div className="font-bold text-white">{dog.breederName}</div>
+                           <div className="font-bold text-white">{dog.breederName || 'Unknown Breeder'}</div>
                            <div className="text-[10px] uppercase font-bold text-primary tracking-widest">Master Breeder Cert.</div>
                         </div>
                      </div>
@@ -236,11 +236,11 @@ export default function DogDetail({ id }: { id: string }) {
                       <Syringe className="w-8 h-8 text-primary opacity-50" />
                    </div>
                    <div className="space-y-4">
-                      {dog.vaccineHistory.split(',').map((v, i) => (
+                      {(dog.vaccineHistory || 'Core Vaccinations').split(',').map((v, i) => (
                          <div key={i} className="flex items-center justify-between p-4 bg-white/5 rounded-2xl">
                             <div className="flex items-center gap-3">
                                <CheckCircle2 className="w-4 h-4 text-primary" />
-                               <span className="font-semibold">{v.trim() || 'Core Vaccinations'}</span>
+                               <span className="font-semibold">{v.trim()}</span>
                             </div>
                             <span className="text-xs font-mono text-muted-foreground">SECURE_ON_CHAIN</span>
                          </div>

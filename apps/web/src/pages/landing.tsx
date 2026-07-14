@@ -150,7 +150,7 @@ export default function Landing() {
               <Button
                 size="lg"
                 className="h-14 px-10 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-lg transition-transform hover:scale-105 active:scale-95"
-                onClick={() => setLocation('/register')}
+                onClick={() => setLocation('/dogs/register')}
               >
                 Register Your Dog
               </Button>

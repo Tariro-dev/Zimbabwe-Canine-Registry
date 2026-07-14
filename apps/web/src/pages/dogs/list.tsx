@@ -29,6 +29,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 
 export default function DogsList() {
+  const [, setLocation] = useLocation();
   const { data: dogs, isLoading } = useListDogs();
   const [search, setSearch] = React.useState('');
 
@@ -61,11 +62,12 @@ export default function DogsList() {
               className="pl-12 h-12 bg-card/30 border-white/5 rounded-2xl focus-visible:ring-primary/30"
             />
           </div>
-          <Link href="/dogs/register">
-            <Button className="h-12 w-12 md:w-auto md:px-6 rounded-2xl bg-primary hover:bg-primary/90 text-black font-bold gap-2 shadow-lg shadow-primary/10">
-              <Plus className="w-5 h-5" /> <span className="hidden md:inline">Add Dog</span>
-            </Button>
-          </Link>
+          <Button
+            className="h-12 w-12 md:w-auto md:px-6 rounded-2xl bg-primary hover:bg-primary/90 text-black font-bold gap-2 shadow-lg shadow-primary/10"
+            onClick={() => setLocation('/dogs/register')}
+          >
+            <Plus className="w-5 h-5" /> <span className="hidden md:inline">Add Dog</span>
+          </Button>
         </div>
       </div>
 
@@ -97,14 +99,21 @@ export default function DogsList() {
 
 function DogCard({ dog }: { dog: Dog }) {
   const age = React.useMemo(() => {
-    const duration = intervalToDuration({
-      start: new Date(dog.birthDate),
-      end: new Date()
-    });
-    if (duration.years && duration.years > 0) {
-      return `${duration.years}y ${duration.months || 0}m`;
+    try {
+      const birth = dog.birthDate ? new Date(dog.birthDate) : null;
+      if (!birth || isNaN(birth.getTime())) return 'N/A';
+
+      const duration = intervalToDuration({
+        start: birth,
+        end: new Date()
+      });
+      if (duration.years && duration.years > 0) {
+        return `${duration.years}y ${duration.months || 0}m`;
+      }
+      return `${duration.months || 0}m`;
+    } catch (e) {
+      return 'N/A';
     }
-    return `${duration.months || 0}m`;
   }, [dog.birthDate]);
 
   return (
@@ -158,11 +167,12 @@ function DogCard({ dog }: { dog: Dog }) {
         </div>
 
         <div className="flex items-center gap-3">
-           <Link href={`/dogs/${dog.id}`} className="flex-1">
-              <Button className="w-full h-12 rounded-2xl bg-white/5 hover:bg-primary hover:text-black border border-white/10 transition-all font-bold gap-2">
-                 <Eye className="w-4 h-4" /> View Profile
-              </Button>
-           </Link>
+           <Button
+              className="flex-1 h-12 rounded-2xl bg-white/5 hover:bg-primary hover:text-black border border-white/10 transition-all font-bold gap-2"
+              onClick={() => setLocation(`/dogs/${dog.id}`)}
+           >
+              <Eye className="w-4 h-4" /> View Profile
+           </Button>
 
            <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -173,21 +183,15 @@ function DogCard({ dog }: { dog: Dog }) {
               <DropdownMenuContent align="end" className="w-56 bg-card border-white/10 rounded-2xl p-2">
                  <DropdownMenuLabel className="text-xs uppercase font-bold tracking-widest text-muted-foreground px-3 py-2">Quick Actions</DropdownMenuLabel>
                  <DropdownMenuSeparator className="bg-white/5" />
-                 <Link href={`/dogs/${dog.id}/certificate`}>
-                    <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
-                        <FileText className="w-4 h-4 text-primary" /> Print Certificate
-                    </DropdownMenuItem>
-                 </Link>
-                 <Link href={`/dogs/${dog.id}`}>
-                    <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
-                        <QrCode className="w-4 h-4 text-primary" /> Generate Passport QR
-                    </DropdownMenuItem>
-                 </Link>
-                 <Link href={`/dogs/${dog.id}/transfer`}>
-                    <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
-                        <ArrowRightLeft className="w-4 h-4 text-primary" /> Transfer Ownership
-                    </DropdownMenuItem>
-                 </Link>
+                 <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer" onClick={() => setLocation(`/dogs/${dog.id}/certificate`)}>
+                    <FileText className="w-4 h-4 text-primary" /> Print Certificate
+                 </DropdownMenuItem>
+                 <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer" onClick={() => setLocation(`/dogs/${dog.id}`)}>
+                    <QrCode className="w-4 h-4 text-primary" /> Generate Passport QR
+                 </DropdownMenuItem>
+                 <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer" onClick={() => setLocation(`/dogs/${dog.id}/transfer`)}>
+                    <ArrowRightLeft className="w-4 h-4 text-primary" /> Transfer Ownership
+                 </DropdownMenuItem>
               </DropdownMenuContent>
            </DropdownMenu>
         </div>

@@ -16,14 +16,23 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const { data: profile, isLoading, error } = useGetMyProfile();
+
+  const token = localStorage.getItem('zcr_auth_token');
+
+  const { data: profile, isLoading } = useGetMyProfile({
+    query: {
+      enabled: !!token,
+      staleTime: 5 * 60 * 1000,
+      gcTime: 10 * 60 * 1000,
+      retry: false,
+    }
+  });
 
   React.useEffect(() => {
-    const token = localStorage.getItem('zcr_auth_token');
     if (!token && !isLoading) {
       setLocation('/login');
     }
-  }, [isLoading, setLocation]);
+  }, [isLoading, setLocation, token]);
 
   if (isLoading) {
     return (
