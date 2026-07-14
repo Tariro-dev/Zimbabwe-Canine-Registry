@@ -361,7 +361,8 @@ export const GetDashboardStatsResponse = zod.object({
   "type": zod.string(),
   "description": zod.string(),
   "timestamp": zod.string(),
-  "dogName": zod.string().nullish()
+  "dogName": zod.string().nullish(),
+  "txHash": zod.string().nullish()
 }))
 })
 

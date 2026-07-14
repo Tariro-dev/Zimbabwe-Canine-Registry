@@ -13,4 +13,6 @@ export interface ActivityItem {
   timestamp: string;
   /** @nullable */
   dogName?: string | null;
+  /** @nullable */
+  txHash?: string | null;
 }

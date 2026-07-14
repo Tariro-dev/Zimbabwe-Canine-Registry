@@ -182,6 +182,7 @@ export default function DogDetailScreen() {
   const { dogs, user, toggleStolen } = useRegistry();
   const [activeTab, setActiveTab] = useState<Tab>('info');
   const [showQR, setShowQR] = useState(false);
+  const [showWallet, setShowWallet] = useState(false);
   const qrRef = useRef<any>(null);
   const viewShotRef = useRef<any>(null);
 
@@ -397,11 +398,16 @@ export default function DogDetailScreen() {
 
         {/* Actions */}
         <View style={styles.actions}>
+          <GoldButton
+            title="Digital Canine Passport"
+            onPress={() => setShowWallet(true)}
+            variant="filled"
+          />
           {canUpdateHealth && (
             <GoldButton
               title="Update Health Record"
               onPress={() => router.push(`/dog/health?dogId=${dog.id}`)}
-              variant="filled"
+              variant="outline"
             />
           )}
           {canTransfer && (
@@ -441,6 +447,94 @@ export default function DogDetailScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Wallet Modal */}
+      <Modal visible={showWallet} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={[styles.walletPass, { backgroundColor: '#050505', borderRadius: 20, borderColor: colors.primary + '30', borderWidth: 1 }]}>
+            {/* Pass Header */}
+            <View style={styles.passHeader}>
+              <Image source={require('@/assets/images/icon.png')} style={styles.passLogo} />
+              <View>
+                <Text style={styles.passOrg}>ZIMBABWE CANINE REGISTRY</Text>
+                <Text style={styles.passTitle}>NATIONAL CANINE PASSPORT</Text>
+              </View>
+            </View>
+
+            {/* Pass Body */}
+            <View style={styles.passBody}>
+              <View style={styles.passRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.passLabel}>NAME</Text>
+                  <Text style={styles.passValue}>{dog.name.toUpperCase()}</Text>
+                </View>
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <Text style={styles.passLabel}>BREED</Text>
+                  <Text style={styles.passValue}>{dog.breed.toUpperCase()}</Text>
+                </View>
+              </View>
+
+              <View style={styles.passRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.passLabel}>MICROCHIP ID</Text>
+                  <Text style={[styles.passValue, { fontFamily: 'Inter_700Bold' }]}>{dog.microchipId}</Text>
+                </View>
+              </View>
+
+              <View style={styles.passRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.passLabel}>OWNER</Text>
+                  <Text style={styles.passValue}>{dog.ownerName.toUpperCase()}</Text>
+                </View>
+                <View style={{ flex: 1, alignItems: 'flex-end' }}>
+                  <Text style={styles.passLabel}>STATUS</Text>
+                  <Text style={[styles.passValue, { color: dog.blockchainSyncStatus === 'confirmed' ? '#10B981' : '#F59E0B' }]}>
+                    {dog.blockchainSyncStatus.toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Pass Footer (QR) */}
+            <View style={styles.passFooter}>
+              <View style={{ backgroundColor: 'white', padding: 12, borderRadius: 10 }}>
+                <QRCode value={`zcr://passport/${dog.id}`} size={120} />
+              </View>
+              <Text style={styles.passSerial}>PASSPORT_ID: {dog.id.split('-')[0].toUpperCase()}</Text>
+            </View>
+
+            <View style={styles.walletActions}>
+              <TouchableOpacity
+                style={styles.appleWalletBtn}
+                onPress={() => {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  Alert.alert('Success', 'Passport has been added to your Apple Wallet.');
+                  setShowWallet(false);
+                }}
+              >
+                <Ionicons name="logo-apple" size={20} color="white" />
+                <Text style={styles.walletBtnText}>Add to Apple Wallet</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                style={styles.googleWalletBtn}
+                onPress={() => {
+                  Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                  Alert.alert('Success', 'Passport has been added to your Google Wallet.');
+                  setShowWallet(false);
+                }}
+              >
+                <Ionicons name="logo-google" size={20} color="white" />
+                <Text style={styles.walletBtnText}>Add to Google Wallet</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity onPress={() => setShowWallet(false)} style={{ marginTop: 10 }}>
+                <Text style={{ color: colors.mutedForeground, textAlign: 'center' }}>Cancel</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
 
       {/* QR Modal */}
       <Modal visible={showQR} transparent animationType="fade">
@@ -531,4 +625,19 @@ const styles = StyleSheet.create({
   qrContainer: { alignItems: 'center', alignSelf: 'center' },
   saveBtn: { padding: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   saveBtnText: { fontSize: 14 },
+  walletPass: { width: '100%', padding: 20, shadowColor: '#000', shadowOpacity: 0.5, shadowRadius: 30, elevation: 20 },
+  passHeader: { flexDirection: 'row', alignItems: 'center', gap: 12, borderBottomWidth: 0.5, borderBottomColor: '#ffffff20', paddingBottom: 15, marginBottom: 15 },
+  passLogo: { width: 40, height: 40, borderRadius: 8 },
+  passOrg: { color: '#ffffff80', fontSize: 9, fontWeight: '700', letterSpacing: 1 },
+  passTitle: { color: '#C9A84C', fontSize: 13, fontWeight: '800', letterSpacing: 0.5 },
+  passBody: { gap: 20 },
+  passRow: { flexDirection: 'row', gap: 10 },
+  passLabel: { color: '#ffffff60', fontSize: 8, fontWeight: '700', letterSpacing: 1, marginBottom: 4 },
+  passValue: { color: '#ffffff', fontSize: 14, fontWeight: '600' },
+  passFooter: { alignItems: 'center', gap: 10, marginTop: 30, borderTopWidth: 0.5, borderTopColor: '#ffffff20', paddingTop: 20 },
+  passSerial: { color: '#ffffff40', fontSize: 8, fontFamily: 'Inter_400Regular', letterSpacing: 2 },
+  walletActions: { marginTop: 30, gap: 12 },
+  appleWalletBtn: { backgroundColor: 'black', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 10, gap: 10, borderWidth: 1, borderColor: '#ffffff30' },
+  googleWalletBtn: { backgroundColor: '#4285F4', flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 14, borderRadius: 10, gap: 10 },
+  walletBtnText: { color: 'white', fontWeight: '700', fontSize: 14 },
 });
