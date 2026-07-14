@@ -1,55 +1,44 @@
 <svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Rounded Square Background -->
   <rect width="1024" height="1024" rx="200" fill="#0A0A0A"/>
 
   <defs>
-    <linearGradient id="gold-gradient-3d" x1="512" y1="200" x2="512" y2="850" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#E8C78B"/>
-      <stop offset="0.4" stop-color="#D4AF37"/>
+    <linearGradient id="gold-gradient" x1="512" y1="200" x2="512" y2="850" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#F5E0A3"/>
+      <stop offset="0.5" stop-color="#D4AF37"/>
       <stop offset="1" stop-color="#8B6B23"/>
     </linearGradient>
-
-    <filter id="shadow-3d" x="-20%" y="-20%" width="140%" height="140%">
-      <feDropShadow dx="0" dy="15" stdDeviation="15" flood-color="black" flood-opacity="0.8"/>
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
     </filter>
   </defs>
 
-  <g filter="url(#shadow-3d)">
-    <!-- The 4 Toe Pads -->
-    <ellipse cx="230" cy="450" rx="95" ry="145" fill="url(#gold-gradient-3d)" transform="rotate(-30, 230, 450)"/>
-    <ellipse cx="415" cy="270" rx="100" ry="165" fill="url(#gold-gradient-3d)" transform="rotate(-10, 415, 270)"/>
-    <ellipse cx="609" cy="270" rx="100" ry="165" fill="url(#gold-gradient-3d)" transform="rotate(10, 609, 270)"/>
-    <ellipse cx="794" cy="450" rx="95" ry="145" fill="url(#gold-gradient-3d)" transform="rotate(30, 794, 450)"/>
+  <g filter="url(#glow)">
+    <!-- Pads -->
+    <ellipse cx="230" cy="450" rx="90" ry="140" fill="url(#gold-gradient)" transform="rotate(-30, 230, 450)"/>
+    <ellipse cx="410" cy="270" rx="95" ry="160" fill="url(#gold-gradient)" transform="rotate(-10, 410, 270)"/>
+    <ellipse cx="614" cy="270" rx="95" ry="160" fill="url(#gold-gradient)" transform="rotate(10, 614, 270)"/>
+    <ellipse cx="794" cy="450" rx="90" ry="140" fill="url(#gold-gradient)" transform="rotate(30, 794, 450)"/>
 
-    <!-- The Main Palm Pad -->
+    <!-- Large Palm Pad -->
     <path d="M512 400
-             C370 400 300 500 300 670
-             C300 840 400 900 512 900
-             C624 900 724 840 724 670
-             C724 500 654 400 512 400 Z" fill="url(#gold-gradient-3d)"/>
+             C370 400 300 500 300 680
+             C300 860 400 920 512 920
+             C624 920 724 860 724 680
+             C724 500 654 400 512 400 Z" fill="url(#gold-gradient)"/>
 
-    <!-- The Dog Silhouette (facing right) - precisely tracing the image -->
-    <path d="M515 510
-             C505 510 495 515 485 525
-             C475 535 465 550 460 580
-             C455 610 455 660 490 730
-             C505 760 545 760 560 730
-             C595 660 595 610 590 580
-             C585 550 575 535 565 525
-             C555 515 545 510 535 510
-             L540 470
-             L515 510 Z" fill="#0A0A0A" />
-
-    <!-- Refining the dog head based on the specific "Doberman/GSD" look in the image -->
+    <!-- Precision Hand-Drawn Dog Silhouette Matching the provided image -->
     <path d="M430 780
-             C410 750 395 680 410 600
-             C420 550 440 520 470 510
-             C495 500 515 510 535 550
-             L550 450
-             L580 540
-             C600 530 620 535 640 550
-             C670 570 690 620 680 700
-             C675 780 640 850 580 870
-             C500 890 450 820 430 780 Z" fill="#0A0A0A" />
+             C410 750 400 680 415 620
+             C425 570 445 530 475 515
+             L490 420
+             L530 520
+             C550 510 570 510 590 525
+             L610 420
+             L635 525
+             C665 540 685 580 690 630
+             C695 680 685 750 660 800
+             C635 850 580 880 512 880
+             C445 880 430 830 430 780 Z" fill="#0A0A0A"/>
   </g>
 </svg>

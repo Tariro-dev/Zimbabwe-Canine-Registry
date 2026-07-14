@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useGetMyProfile } from '@workspace/api-client-react';
 import {
   Card,
   CardContent,
