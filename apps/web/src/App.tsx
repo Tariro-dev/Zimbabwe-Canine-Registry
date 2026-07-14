@@ -25,7 +25,11 @@ import DogCertificate from '@/pages/dogs/certificate';
 import RegulatorDashboard from '@/pages/regulator-dashboard';
 import AuditLog from '@/pages/audit-log';
 import Explorer from '@/pages/explorer';
-import { setAuthTokenGetter } from '@workspace/api-client-react';
+import { setAuthTokenGetter, setBaseUrl } from '@workspace/api-client-react';
+
+// Automatically use the correct API URL based on environment
+const API_URL = import.meta.env.VITE_API_URL || '';
+setBaseUrl(API_URL);
 
 setAuthTokenGetter(() => localStorage.getItem('zcr_auth_token'));
 
