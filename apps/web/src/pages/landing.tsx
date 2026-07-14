@@ -50,7 +50,7 @@ export default function Landing() {
           borderBottom: `1px solid rgba(255, 255, 255, ${scrollY.get() > 50 ? 0.1 : 0})`,
           boxShadow: scrollY.get() > 50 ? '0 10px 40px -10px rgba(0,0,0,0.7)' : 'none'
         }}
-        className="fixed top-0 left-0 right-0 z-[1000] h-20 flex items-center px-6 md:px-12 transition-all duration-300"
+        className="fixed top-0 left-0 right-0 z-[9999] h-20 flex items-center px-6 md:px-12 transition-all duration-300"
       >
         <div className="flex items-center gap-3">
           <img src="/favicon.svg" alt="ZCR" className="w-10 h-10 brightness-125" />
