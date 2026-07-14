@@ -50,8 +50,10 @@ export default function Register() {
         throw new Error(err.error || "Registration failed");
       }
 
-      const user = await response.json();
-      localStorage.setItem('zcr_user_id', user.id);
+      const data = await response.json();
+      localStorage.setItem('zcr_auth_token', data.token);
+      localStorage.setItem('zcr_user_id', data.user.id);
+
       toast.success("Registration successful!");
       setLocation('/dashboard');
     } catch (error: any) {

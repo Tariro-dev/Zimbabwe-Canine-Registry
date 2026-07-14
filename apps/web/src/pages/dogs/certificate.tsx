@@ -3,6 +3,7 @@ import { useGetDog } from '@workspace/api-client-react';
 import { ShieldCheck, Award, QrCode, Printer, Download, Share2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
+import { formatSafeDate } from '@/lib/utils';
 
 export default function DogCertificate({ id }: { id: string }) {
   const { data: dog, isLoading } = useGetDog(id);
@@ -74,7 +75,7 @@ export default function DogCertificate({ id }: { id: string }) {
             <CertField label="Registered Name" value={dog.name} className="text-3xl font-bold font-serif" />
             <CertField label="Microchip Identification" value={dog.microchipId} className="font-mono text-xl font-black text-[#C9A84C]" />
             <CertField label="Breed" value={dog.breed} />
-            <CertField label="Date of Birth" value={format(new Date(dog.birthDate || ''), 'PPP')} />
+            <CertField label="Date of Birth" value={formatSafeDate(dog.birthDate)} />
             <CertField label="Gender" value={dog.gender.toUpperCase()} />
             <CertField label="Color & Markings" value={dog.color} />
             <CertField label="Registered Owner" value={dog.ownerName} />
@@ -100,7 +101,7 @@ export default function DogCertificate({ id }: { id: string }) {
               <div className="text-xs font-black tracking-widest text-[#C9A84C] uppercase">
                 Certificate No: {dog.certNumber || `ZCR-${dog.id.substring(0, 8).toUpperCase()}`}
               </div>
-              <p className="text-[10px] text-[#1a1a1a]/60 font-bold">Issued: {format(new Date(dog.registrationDate), 'PPP')}</p>
+              <p className="text-[10px] text-[#1a1a1a]/60 font-bold">Issued: {formatSafeDate(dog.registrationDate)}</p>
               <div className="flex items-center justify-center md:justify-end gap-2 text-emerald-600">
                  <ShieldCheck className="w-4 h-4" />
                  <span className="text-[10px] font-black uppercase tracking-widest">On-Chain Verified</span>

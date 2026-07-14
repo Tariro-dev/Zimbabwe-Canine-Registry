@@ -58,9 +58,10 @@ router.get("/dogs", authenticate, async (req, res) => {
 
 // GET /dogs/recent
 router.get("/dogs/recent", async (_req, res) => {
-  const rows = await db.select().from(dogsTable);
-  const sorted = rows.sort((a, b) => b.registrationDate.localeCompare(a.registrationDate)).slice(0, 10);
-  res.json(sorted.map(dogToApi));
+  const rows = await db.select().from(dogsTable)
+    .orderBy(sql`${dogsTable.registrationDate} DESC`)
+    .limit(10);
+  res.json(rows.map(dogToApi));
 });
 
 // GET /dogs/search?microchip=... (Publicly Accessible)

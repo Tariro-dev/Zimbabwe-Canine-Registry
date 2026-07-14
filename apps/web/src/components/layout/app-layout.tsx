@@ -16,7 +16,25 @@ interface AppLayoutProps {
 export function AppLayout({ children }: AppLayoutProps) {
   const [location, setLocation] = useLocation();
   const { theme, setTheme, resolvedTheme } = useTheme();
-  const { data: profile } = useGetMyProfile();
+  const { data: profile, isLoading, error } = useGetMyProfile();
+
+  React.useEffect(() => {
+    const token = localStorage.getItem('zcr_auth_token');
+    if (!token && !isLoading) {
+      setLocation('/login');
+    }
+  }, [isLoading, setLocation]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="flex flex-col items-center gap-4">
+           <img src="/favicon.svg" className="w-16 h-16 animate-pulse brightness-125" alt="Loading..." />
+           <p className="text-primary font-mono text-xs tracking-widest animate-pulse">SYNCHRONIZING_LEDGER...</p>
+        </div>
+      </div>
+    );
+  }
 
   const pageTitle = React.useMemo(() => {
     const path = location.split('/')[1] || 'Dashboard';

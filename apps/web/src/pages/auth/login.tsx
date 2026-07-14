@@ -5,15 +5,42 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Link, useLocation } from 'wouter';
+import { toast } from 'sonner';
 
 export default function Login() {
   const [showPassword, setShowPassword] = React.useState(false);
   const [, setLocation] = useLocation();
+  const [email, setEmail] = React.useState('');
+  const [password, setPassword] = React.useState('');
+  const [loading, setLoading] = React.useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Simulate login
-    setLocation('/dashboard');
+    setLoading(true);
+
+    try {
+      const response = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      });
+
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || "Login failed");
+      }
+
+      const data = await response.json();
+      localStorage.setItem('zcr_auth_token', data.token);
+      localStorage.setItem('zcr_user_id', data.user.id);
+
+      toast.success("Authentication successful");
+      setLocation('/dashboard');
+    } catch (error: any) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -70,6 +97,8 @@ export default function Login() {
                        type="email"
                        placeholder="name@organization.com"
                        className="pl-12 h-14 bg-white/5 border-white/10 rounded-2xl focus-visible:ring-primary/30 transition-all text-lg"
+                       value={email}
+                       onChange={(e) => setEmail(e.target.value)}
                        required
                      />
                   </div>
@@ -83,6 +112,8 @@ export default function Login() {
                        type={showPassword ? "text" : "password"}
                        placeholder="••••••••••••"
                        className="pl-12 pr-12 h-14 bg-white/5 border-white/10 rounded-2xl focus-visible:ring-primary/30 transition-all text-lg"
+                       value={password}
+                       onChange={(e) => setPassword(e.target.value)}
                        required
                      />
                      <button
@@ -104,8 +135,8 @@ export default function Login() {
                <Link href="/forgot-password text-sm font-bold text-primary hover:underline">Forgot Password?</Link>
             </div>
 
-            <Button type="submit" className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-black font-bold text-lg shadow-xl shadow-primary/10 transition-transform active:scale-95">
-               Authenticate Account
+            <Button type="submit" disabled={loading} className="w-full h-14 rounded-2xl bg-primary hover:bg-primary/90 text-black font-bold text-lg shadow-xl shadow-primary/10 transition-transform active:scale-95">
+               {loading ? "Authenticating..." : "Authenticate Account"}
             </Button>
           </form>
 

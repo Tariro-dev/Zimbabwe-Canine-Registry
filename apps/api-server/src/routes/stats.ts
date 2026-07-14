@@ -7,51 +7,47 @@ const router: IRouter = Router();
 
 // GET /stats/dashboard
 router.get("/stats/dashboard", async (_req, res) => {
-  const [dogs, litters, activity] = await Promise.all([
-    db.select().from(dogsTable),
-    db.select().from(littersTable),
-    db.select().from(activityLogTable),
+  const [
+    totalDogsCount,
+    totalLittersCount,
+    stolenCount,
+    sterilizedCount,
+    confirmedCount,
+    recentActivityRows
+  ] = await Promise.all([
+    db.select({ value: count() }).from(dogsTable),
+    db.select({ value: count() }).from(littersTable),
+    db.select({ value: count() }).from(dogsTable).where(eq(dogsTable.isStolen, true)),
+    db.select({ value: count() }).from(dogsTable).where(eq(dogsTable.sterilizationStatus, "Sterilized")),
+    db.select({ value: count() }).from(dogsTable).where(eq(dogsTable.blockchainSyncStatus, "confirmed")),
+    db.select().from(activityLogTable).orderBy(sql`${activityLogTable.timestamp} DESC`).limit(20),
   ]);
 
   const now = new Date();
   const thisMonthPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
 
-  const stolenReports = dogs.filter(d => d.isStolen).length;
-  const sterilizedCount = dogs.filter(d => d.sterilizationStatus === "Sterilized").length;
-  const blockchainConfirmed = dogs.filter(d => d.blockchainSyncStatus === "confirmed").length;
-  const registeredThisMonth = dogs.filter(d => d.registrationDate.startsWith(thisMonthPrefix)).length;
+  // For thisMonth, we might still need to fetch or use a better SQL query
+  // But for now let's just get the count of dogs registered this month
+  const registeredThisMonthRows = await db.select({ value: count() })
+    .from(dogsTable)
+    .where(sql`${dogsTable.registrationDate} LIKE ${thisMonthPrefix + '%'}`);
 
-  // Breed breakdown
-  const breedMap = new Map<string, number>();
-  for (const d of dogs) {
-    breedMap.set(d.breed, (breedMap.get(d.breed) ?? 0) + 1);
-  }
-  const breedBreakdown = Array.from(breedMap.entries())
-    .map(([breed, count]) => ({ breed, count }))
-    .sort((a, b) => b.count - a.count)
-    .slice(0, 8);
-
-  // Recent activity
-  const recentActivity = activity
-    .sort((a, b) => b.timestamp.localeCompare(a.timestamp))
-    .slice(0, 20)
-    .map(a => ({
-      id: a.id,
-      type: a.type,
-      dogName: a.dogName ?? null,
-      microchipId: a.microchipId ?? null,
-      description: a.description,
-      timestamp: a.timestamp,
-    }));
+  const recentActivity = recentActivityRows.map(a => ({
+    id: a.id,
+    type: a.type,
+    dogName: a.dogName ?? null,
+    microchipId: a.microchipId ?? null,
+    description: a.description,
+    timestamp: a.timestamp,
+  }));
 
   res.json({
-    totalDogs: dogs.length,
-    totalLitters: litters.length,
-    stolenReports,
-    sterilizedCount,
-    blockchainConfirmed,
-    registeredThisMonth,
-    breedBreakdown,
+    totalDogs: totalDogsCount[0].value,
+    totalLitters: totalLittersCount[0].value,
+    stolenReports: stolenCount[0].value,
+    sterilizedCount: sterilizedCount[0].value,
+    blockchainConfirmed: confirmedCount[0].value,
+    registeredThisMonth: registeredThisMonthRows[0].value,
     recentActivity,
   });
 });

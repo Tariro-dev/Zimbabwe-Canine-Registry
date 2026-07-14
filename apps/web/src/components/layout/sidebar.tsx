@@ -23,7 +23,7 @@ export function Sidebar() {
   const navItems = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { href: '/dogs', label: 'My Dogs', icon: Dog },
-    { href: '/register', label: 'Register Dog', icon: PlusCircle },
+    { href: '/dogs/register', label: 'Register Dog', icon: PlusCircle },
     { href: '/verify', label: 'Verify Identity', icon: Search },
     { href: '/litters', label: 'Litter Records', icon: ListPlus },
     { href: '/regulator', label: 'Regulator', icon: ShieldCheck },
@@ -105,7 +105,11 @@ export function Sidebar() {
         <Button
           variant="ghost"
           className="w-full justify-start gap-3 px-3 py-6 text-destructive hover:bg-destructive/10 hover:text-destructive rounded-xl"
-          onClick={() => window.location.href = '/'}
+          onClick={() => {
+            localStorage.removeItem('zcr_auth_token');
+            localStorage.removeItem('zcr_user_id');
+            window.location.href = '/';
+          }}
         >
           <LogOut className="w-5 h-5" />
           {!isCollapsed && <span className="font-bold">Logout</span>}

@@ -24,6 +24,9 @@ import Profile from '@/pages/profile';
 import DogCertificate from '@/pages/dogs/certificate';
 import RegulatorDashboard from '@/pages/regulator-dashboard';
 import AuditLog from '@/pages/audit-log';
+import { setAuthTokenGetter } from '@workspace/api-client-react';
+
+setAuthTokenGetter(() => localStorage.getItem('zcr_auth_token'));
 
 const queryClient = new QueryClient({
   defaultOptions: {

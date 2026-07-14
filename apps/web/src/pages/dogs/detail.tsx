@@ -29,6 +29,7 @@ import { MediaGallery } from '@/components/media-gallery';
 import { Link } from 'wouter';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { motion } from 'framer-motion';
+import { cn, formatSafeDate } from '@/lib/utils';
 
 export default function DogDetail({ id }: { id: string }) {
   const { data: dog, isLoading } = useGetDog(id);
@@ -148,9 +149,9 @@ export default function DogDetail({ id }: { id: string }) {
                   </CardHeader>
                   <CardContent className="p-8 pt-0 grid grid-cols-1 sm:grid-cols-2 gap-8">
                      <InfoField icon={QrCode} label="Microchip Number" value={dog.microchipId} mono />
-                     <InfoField icon={Calendar} label="Date of Birth" value={dog.birthDate ? format(new Date(dog.birthDate), 'PP') : 'N/A'} />
+                     <InfoField icon={Calendar} label="Date of Birth" value={formatSafeDate(dog.birthDate)} />
                      <InfoField icon={Activity} label="Color / Markings" value={dog.color} />
-                     <InfoField icon={History} label="Registration Date" value={format(new Date(dog.registrationDate), 'PP')} />
+                     <InfoField icon={History} label="Registration Date" value={formatSafeDate(dog.registrationDate)} />
                      <InfoField icon={MapPin} label="Birth Location" value="Harare, ZW" />
                      <InfoField icon={CheckCircle2} label="Registration Authority" value="ZCR National Office" />
                   </CardContent>
@@ -220,7 +221,7 @@ export default function DogDetail({ id }: { id: string }) {
                          <div className="h-full bg-primary w-[65%]" />
                       </div>
                       <p className="text-sm text-muted-foreground leading-relaxed italic">
-                         Last measured on {dog.lastCheckup ? format(new Date(dog.lastCheckup), 'PP') : 'Registration'}.
+                         Last measured on {formatSafeDate(dog.lastCheckup)}.
                          Weight is stable within breed standards.
                       </p>
                    </div>
@@ -287,7 +288,7 @@ export default function DogDetail({ id }: { id: string }) {
                            <div>
                               <h4 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3">Timestamp</h4>
                               <span className="text-white font-bold font-mono text-sm">
-                                 {dog.blockchainConfirmedAt ? format(new Date(dog.blockchainConfirmedAt), 'PP pp') : '2024-05-12 14:32:11'}
+                                 {formatSafeDate(dog.blockchainConfirmedAt, 'PP pp')}
                               </span>
                            </div>
                         </div>
