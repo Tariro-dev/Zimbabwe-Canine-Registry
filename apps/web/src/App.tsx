@@ -10,6 +10,7 @@ import Landing from '@/pages/landing';
 import Login from '@/pages/auth/login';
 import Register from '@/pages/auth/register';
 import { SplashScreen } from '@/components/splash-screen';
+import { ThemeProvider } from '@/components/theme-provider';
 
 import Dashboard from '@/pages/dashboard';
 import DogsList from '@/pages/dogs/list';
@@ -85,16 +86,18 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <TooltipProvider>
-        {showSplash ? (
-          <SplashScreen onComplete={() => setShowSplash(false)} />
-        ) : (
-          <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
-            <Router />
-          </WouterRouter>
-        )}
-        <Toaster />
-      </TooltipProvider>
+      <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+        <TooltipProvider>
+          {showSplash ? (
+            <SplashScreen onComplete={() => setShowSplash(false)} />
+          ) : (
+            <WouterRouter base={import.meta.env.BASE_URL.replace(/\/$/, '')}>
+              <Router />
+            </WouterRouter>
+          )}
+          <Toaster />
+        </TooltipProvider>
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }
