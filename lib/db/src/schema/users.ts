@@ -10,6 +10,8 @@ export const usersTable = pgTable("users", {
   role: text("role").notNull().default("owner"), // 'owner', 'breeder', 'vet', 'regulator'
   kennelName: text("kennel_name"),
   licenseNumber: text("license_number"),
+  province: text("province"),
+  address: text("address"),
   registeredAt: timestamp("registered_at").defaultNow().notNull(),
 });
 

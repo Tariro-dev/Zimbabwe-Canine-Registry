@@ -36,16 +36,20 @@ const stagger = {
 
 export default function Landing() {
   const { scrollY } = useScroll();
-  const navBgOpacity = useTransform(scrollY, [0, 100], [0, 0.9]);
-  const navBlur = useTransform(scrollY, [0, 100], [0, 12]);
+  const navBgOpacity = useTransform(scrollY, [0, 100], [0, 0.95]);
+  const navBlur = useTransform(scrollY, [0, 100], [0, 16]);
   const [, setLocation] = useLocation();
 
   return (
-    <div className="min-h-screen bg-background overflow-x-hidden selection:bg-primary/30">
+    <div className="min-h-screen bg-[#020202] overflow-x-hidden selection:bg-primary/30 text-white">
       {/* Navigation */}
       <motion.nav
-        style={{ backgroundColor: `rgba(0, 0, 0, ${navBgOpacity.get()})`, backdropFilter: `blur(${navBlur.get()}px)` }}
-        className="fixed top-0 left-0 right-0 z-50 h-20 flex items-center px-6 md:px-12 border-b border-white/5 transition-colors"
+        style={{
+          backgroundColor: `rgba(2, 2, 2, ${navBgOpacity.get()})`,
+          backdropFilter: `blur(${navBlur.get()}px)`,
+          borderBottom: `1px solid rgba(255, 255, 255, ${scrollY.get() > 50 ? 0.1 : 0})`
+        }}
+        className="fixed top-0 left-0 right-0 z-[100] h-20 flex items-center px-6 md:px-12 transition-all duration-300"
       >
         <div className="flex items-center gap-3">
           <img src="/favicon.svg" alt="ZCR" className="w-10 h-10 brightness-125" />

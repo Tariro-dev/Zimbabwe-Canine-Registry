@@ -21,6 +21,7 @@ export default function Register() {
     email: '',
     phone: '',
     nationalId: '',
+    province: '',
     role: 'owner',
     password: '',
     confirmPassword: ''
