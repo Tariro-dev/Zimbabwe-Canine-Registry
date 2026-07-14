@@ -5,8 +5,11 @@ import { UpdateMyProfileBody } from "@workspace/api-zod";
 import { authenticate } from "../middlewares/auth";
 import { genId } from "../lib/helpers";
 import bcrypt from "bcryptjs";
+import jwt from "jsonwebtoken";
 
 const router: IRouter = Router();
+
+const JWT_SECRET = process.env.JWT_SECRET || "zcr-national-secret-key-2024";
 
 // GET /users/me
 router.get("/users/me", authenticate, async (req: any, res) => {
@@ -22,6 +25,47 @@ router.get("/users/me", authenticate, async (req: any, res) => {
     licenseNumber: u.licenseNumber ?? null,
     registeredAt: u.registeredAt
   });
+});
+
+// POST /login
+router.post("/login", async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({ error: "Email and password are required" });
+    }
+
+    const userRows = await db.select().from(usersTable).where(eq(usersTable.email, email));
+    const user = userRows[0];
+
+    if (!user) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.passwordHash);
+    if (!isMatch) {
+      return res.status(401).json({ error: "Invalid email or password" });
+    }
+
+    const token = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        role: user.role
+      }
+    });
+  } catch (error: any) {
+    console.error("Login error:", error);
+    res.status(500).json({ error: "Internal server error during login" });
+  }
 });
 
 // POST /register
@@ -56,10 +100,19 @@ router.post("/register", async (req, res) => {
 
     await db.insert(usersTable).values(newUser);
 
+    const token = jwt.sign(
+      { id: newUser.id, email: newUser.email, role: newUser.role },
+      JWT_SECRET,
+      { expiresIn: "7d" }
+    );
+
     res.status(201).json({
-      id: newUser.id,
-      name: newUser.name,
-      role: newUser.role
+      token,
+      user: {
+        id: newUser.id,
+        name: newUser.name,
+        role: newUser.role
+      }
     });
   } catch (error: any) {
     console.error("Registration error:", error);
