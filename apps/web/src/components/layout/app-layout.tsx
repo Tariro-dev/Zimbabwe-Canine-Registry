@@ -19,9 +19,11 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const token = localStorage.getItem('zcr_auth_token');
 
+  const isPublicPath = location === '/verify' || location.startsWith('/explorer') || location === '/';
+
   const { data: profile, isLoading } = useGetMyProfile({
     query: {
-      enabled: !!token,
+      enabled: !!token && !isPublicPath,
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
       retry: false,
@@ -29,10 +31,10 @@ export function AppLayout({ children }: AppLayoutProps) {
   });
 
   React.useEffect(() => {
-    if (!token && !isLoading) {
+    if (!token && !isLoading && !isPublicPath) {
       setLocation('/login');
     }
-  }, [isLoading, setLocation, token]);
+  }, [isLoading, setLocation, token, isPublicPath]);
 
   if (isLoading) {
     return (

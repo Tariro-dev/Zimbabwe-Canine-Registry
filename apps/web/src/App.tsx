@@ -24,6 +24,7 @@ import Profile from '@/pages/profile';
 import DogCertificate from '@/pages/dogs/certificate';
 import RegulatorDashboard from '@/pages/regulator-dashboard';
 import AuditLog from '@/pages/audit-log';
+import Explorer from '@/pages/explorer';
 import { setAuthTokenGetter } from '@workspace/api-client-react';
 
 setAuthTokenGetter(() => localStorage.getItem('zcr_auth_token'));
@@ -68,6 +69,9 @@ function Router() {
       </Route>
       <Route path="/verify">
         <AppLayout><Verify /></AppLayout>
+      </Route>
+      <Route path="/explorer">
+        <AppLayout><Explorer /></AppLayout>
       </Route>
       <Route path="/litters">
         <AppLayout><LittersList /></AppLayout>

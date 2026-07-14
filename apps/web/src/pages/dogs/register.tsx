@@ -34,6 +34,7 @@ export default function RegisterDog() {
   const { data: profile } = useGetMyProfile();
   const identifyBreed = useIdentifyBreed();
   const [aiSuggestions, setAiSuggestions] = React.useState<{ breed: string; confidence: number }[] | null>(null);
+  const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
   const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({

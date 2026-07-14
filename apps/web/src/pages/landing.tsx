@@ -60,8 +60,8 @@ export default function Landing() {
         </div>
 
         <div className="hidden lg:flex items-center gap-8 ml-12">
-          {['Home', 'Registry', 'Verification', 'Breeders', 'Health Records', 'Lost & Found', 'About'].map((item) => (
-            <a key={item} href={`#${item.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="text-xs font-semibold uppercase tracking-widest text-foreground/70 hover:text-primary transition-colors">
+          {['Home', 'Registry', 'Verification', 'Explorer', 'Breeders'].map((item) => (
+            <a key={item} href={item === 'Explorer' ? '/explorer' : item === 'Verification' ? '/verify' : `#${item.toLowerCase().replace(/ & /g, '-').replace(/ /g, '-')}`} className="text-xs font-semibold uppercase tracking-widest text-foreground/70 hover:text-primary transition-colors">
               {item}
             </a>
           ))}
