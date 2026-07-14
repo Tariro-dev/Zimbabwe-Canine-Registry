@@ -1,6 +1,7 @@
 import React from 'react';
 import { ActivityIndicator, Pressable, StyleProp, StyleSheet, Text, View, ViewStyle } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useColors } from '@/hooks/useColors';
 
 interface Props {
@@ -17,61 +18,89 @@ export function GoldButton({ title, onPress, loading = false, disabled = false, 
   const colors = useColors();
 
   const handlePress = async () => {
-    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+    await Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
     onPress();
   };
 
   const isDisabled = disabled || loading;
-  const height = size === 'sm' ? 38 : size === 'lg' ? 54 : 46;
+  const height = size === 'sm' ? 38 : size === 'lg' ? 56 : 48;
   const fontSize = size === 'sm' ? 13 : size === 'lg' ? 16 : 15;
 
-  const bgColor =
-    variant === 'filled'
-      ? isDisabled
-        ? colors.primary + '60'
-        : colors.primary
-      : 'transparent';
-
-  const borderColor = variant === 'outline' ? colors.primary : 'transparent';
   const textColor =
     variant === 'filled'
       ? colors.primaryForeground
       : colors.primary;
+
+  const ButtonContent = () => (
+    <>
+      {loading ? (
+        <ActivityIndicator size="small" color={textColor} />
+      ) : (
+        <Text style={[styles.text, { color: textColor, fontSize, fontFamily: 'Inter_700Bold' }]}>{title.toUpperCase()}</Text>
+      )}
+    </>
+  );
 
   return (
     <Pressable
       onPress={handlePress}
       disabled={isDisabled}
       style={({ pressed }) => [
-        styles.button,
+        styles.buttonBase,
         {
           height,
-          backgroundColor: bgColor,
-          borderColor,
-          borderWidth: variant === 'outline' ? 1.5 : 0,
-          borderRadius: colors.radius,
-          opacity: pressed ? 0.85 : 1,
-          transform: [{ scale: pressed ? 0.98 : 1 }],
+          opacity: isDisabled ? 0.6 : pressed ? 0.9 : 1,
+          transform: [{ scale: pressed ? 0.97 : 1 }],
         },
         style,
       ]}
     >
-      {loading ? (
-        <ActivityIndicator size="small" color={textColor} />
+      {variant === 'filled' && !isDisabled ? (
+        <LinearGradient
+          colors={[colors.primaryLight, colors.primary, colors.primaryDark]}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={[styles.gradient, { borderRadius: colors.radius }]}
+        >
+          <ButtonContent />
+        </LinearGradient>
       ) : (
-        <Text style={[styles.text, { color: textColor, fontSize, fontFamily: 'Inter_600SemiBold' }]}>{title}</Text>
+        <View
+          style={[
+            styles.fallback,
+            {
+              backgroundColor: variant === 'filled' ? colors.primary : 'transparent',
+              borderColor: variant === 'outline' ? colors.primary : 'transparent',
+              borderWidth: variant === 'outline' ? 1.5 : 0,
+              borderRadius: colors.radius,
+            },
+          ]}
+        >
+          <ButtonContent />
+        </View>
       )}
     </Pressable>
   );
 }
 
 const styles = StyleSheet.create({
-  button: {
+  buttonBase: {
+    width: '100%',
+    overflow: 'hidden',
+  },
+  gradient: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 20,
+  },
+  fallback: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 20,
   },
   text: {
-    letterSpacing: 0.3,
+    letterSpacing: 1.2,
   },
 });

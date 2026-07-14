@@ -5,13 +5,14 @@
  */
 
 const GOLD = '#C9A84C';
-const GOLD_LIGHT = '#DFC277';
-const NEAR_BLACK = '#0D0D0D';
-const DARK_CARD = '#1A1A1A';
-const DARK_SURFACE = '#262626';
-const DARK_BORDER = '#2D2D2D';
-const TEXT_PRIMARY = '#F5F0E8';
-const TEXT_MUTED = '#7A7A7A';
+const GOLD_LIGHT = '#E5D096'; // Brighter, more metallic
+const GOLD_DARK = '#A6893A';  // Deeper bronze for gradients
+const NEAR_BLACK = '#050505'; // Even darker for higher contrast
+const DARK_CARD = '#121212';
+const DARK_SURFACE = '#1A1A1A';
+const DARK_BORDER = '#262626';
+const TEXT_PRIMARY = '#FDFCFB'; // Slightly off-white for elegance
+const TEXT_MUTED = '#888888';
 
 const zcr = {
   text: TEXT_PRIMARY,
@@ -21,18 +22,20 @@ const zcr = {
   card: DARK_CARD,
   cardForeground: TEXT_PRIMARY,
   primary: GOLD,
-  primaryForeground: NEAR_BLACK,
+  primaryDark: GOLD_DARK,
+  primaryLight: GOLD_LIGHT,
+  primaryForeground: '#000000',
   secondary: DARK_SURFACE,
   secondaryForeground: TEXT_PRIMARY,
   muted: DARK_SURFACE,
   mutedForeground: TEXT_MUTED,
   accent: GOLD_LIGHT,
-  accentForeground: NEAR_BLACK,
-  destructive: '#EF4444',
+  accentForeground: '#000000',
+  destructive: '#FF4D4D',
   destructiveForeground: '#FFFFFF',
   border: DARK_BORDER,
   input: DARK_CARD,
-  success: '#22C55E',
+  success: '#10B981',
   warning: '#F59E0B',
   surface: DARK_CARD,
   surfaceRaised: DARK_SURFACE,

@@ -1,8 +1,10 @@
 import React from 'react';
-import { Image, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Image } from 'expo-image';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { StatCard } from '@/components/StatCard';
@@ -36,24 +38,39 @@ export default function DashboardScreen() {
       {/* Header */}
       <View style={styles.header}>
         <View style={styles.logoRow}>
-          <Image source={require('@/assets/images/icon.png')} style={styles.logoIcon} resizeMode="contain" />
+          <Image source={require('@/assets/images/icon.png')} style={styles.logoIcon} contentFit="contain" />
           <View>
-            <Text style={[styles.appName, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>ZCR</Text>
-            <Text style={[styles.appSub, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
-              Zimbabwe Canine Registry
+            <Text style={[styles.appName, { color: colors.primary, fontFamily: 'Inter_900Black' }]}>ZCR</Text>
+            <Text style={[styles.appSub, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium', letterSpacing: 1 }]}>
+              ZIMBABWE CANINE REGISTRY
             </Text>
           </View>
         </View>
+        <TouchableOpacity style={[styles.profileBtn, { backgroundColor: colors.surfaceRaised, borderColor: colors.border }]}>
+          <Ionicons name="person" size={20} color={colors.primary} />
+        </TouchableOpacity>
+      </View>
+
+      {/* Gold separator gradient */}
+      <LinearGradient
+        colors={['transparent', colors.primary + '40', 'transparent']}
+        start={{ x: 0, y: 0 }}
+        end={{ x: 1, y: 0 }}
+        style={styles.separatorGradient}
+      />
+
+      <View style={styles.welcomeRow}>
         <View>
-          <Text style={[styles.greeting, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>Welcome back</Text>
-          <Text style={[styles.userName, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]} numberOfLines={1}>
+          <Text style={[styles.greeting, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>Good morning,</Text>
+          <Text style={[styles.userName, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>
             {user.name.split(' ')[0]}
           </Text>
         </View>
+        <View style={[styles.roleBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
+          <MaterialCommunityIcons name="shield-check" size={14} color={colors.primary} />
+          <Text style={[styles.roleText, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>VERIFIED BREEDER</Text>
+        </View>
       </View>
-
-      {/* Gold separator */}
-      <View style={[styles.separator, { backgroundColor: colors.primary }]} />
 
       {/* Stats */}
       <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Registry Overview</Text>
@@ -146,14 +163,18 @@ export default function DashboardScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1 },
   content: { paddingHorizontal: 18 },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 },
-  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
-  logoIcon: { width: 44, height: 44, borderRadius: 10 },
-  appName: { fontSize: 22 },
-  appSub: { fontSize: 11 },
-  greeting: { fontSize: 12, textAlign: 'right' },
-  userName: { fontSize: 15, textAlign: 'right' },
-  separator: { height: 1.5, marginBottom: 22, opacity: 0.6 },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 },
+  logoRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  logoIcon: { width: 48, height: 48, borderRadius: 12 },
+  appName: { fontSize: 24, letterSpacing: -0.5 },
+  appSub: { fontSize: 9 },
+  profileBtn: { width: 40, height: 40, borderRadius: 20, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
+  welcomeRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 24 },
+  greeting: { fontSize: 13, marginBottom: 2 },
+  userName: { fontSize: 22 },
+  roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
+  roleText: { fontSize: 10, letterSpacing: 0.5 },
+  separatorGradient: { height: 1, marginBottom: 20, width: '100%' },
   sectionTitle: { fontSize: 17, marginBottom: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginTop: 24 },
   seeAll: { fontSize: 13 },

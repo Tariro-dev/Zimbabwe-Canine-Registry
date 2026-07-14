@@ -3,6 +3,7 @@ import { FlatList, Platform, StyleSheet, Text, TextInput, TouchableOpacity, View
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialCommunityIcons, Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { DogCard } from '@/components/DogCard';
@@ -124,11 +125,16 @@ export default function DogsScreen() {
 
       {/* FAB */}
       <TouchableOpacity
-        style={[styles.fab, { backgroundColor: colors.primary, bottom: Platform.OS === 'web' ? 100 : 90 + insets.bottom }]}
+        style={[styles.fab, { bottom: Platform.OS === 'web' ? 100 : 90 + insets.bottom }]}
         onPress={() => router.push('/(tabs)/add')}
         activeOpacity={0.85}
       >
-        <Ionicons name="add" size={28} color={colors.primaryForeground} />
+        <LinearGradient
+          colors={[colors.primaryLight, colors.primary, colors.primaryDark]}
+          style={styles.fabGradient}
+        >
+          <Ionicons name="add" size={32} color={colors.primaryForeground} />
+        </LinearGradient>
       </TouchableOpacity>
     </View>
   );
@@ -139,14 +145,15 @@ const styles = StyleSheet.create({
   topBar: { paddingHorizontal: 18, paddingBottom: 10, gap: 10 },
   title: { fontSize: 26 },
   count: { fontSize: 13, marginTop: -6 },
-  searchWrap: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 10, borderWidth: 1, gap: 8 },
-  searchInput: { flex: 1, fontSize: 14, padding: 0 },
+  searchWrap: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12, paddingVertical: 12, borderWidth: 1, gap: 8 },
+  searchInput: { flex: 1, fontSize: 15, padding: 0 },
   filterRow: { flexDirection: 'row', gap: 8, flexWrap: 'wrap' },
-  filterChip: { paddingHorizontal: 14, paddingVertical: 7, borderWidth: 1 },
-  filterText: { fontSize: 13 },
+  filterChip: { paddingHorizontal: 14, paddingVertical: 8, borderWidth: 1 },
+  filterText: { fontSize: 12, letterSpacing: 0.5 },
   list: { paddingHorizontal: 18, paddingTop: 10 },
   empty: { alignItems: 'center', paddingTop: 60, gap: 10 },
   emptyTitle: { fontSize: 18 },
   emptySub: { fontSize: 14, textAlign: 'center' },
-  fab: { position: 'absolute', right: 20, width: 58, height: 58, borderRadius: 29, alignItems: 'center', justifyContent: 'center', shadowColor: '#C9A84C', shadowOpacity: 0.4, shadowRadius: 12, elevation: 8 },
+  fab: { position: 'absolute', right: 20, width: 64, height: 64, borderRadius: 32, overflow: 'hidden', shadowColor: '#C9A84C', shadowOpacity: 0.5, shadowRadius: 15, elevation: 10 },
+  fabGradient: { flex: 1, alignItems: 'center', justifyContent: 'center' },
 });

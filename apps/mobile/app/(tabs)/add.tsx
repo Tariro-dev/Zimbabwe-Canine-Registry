@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { GoldButton } from '@/components/GoldButton';
@@ -11,45 +12,78 @@ import type { Dog, Gender, SterilizationStatus } from '@/context/RegistryContext
 
 type Mode = 'dog' | 'litter';
 
-function Field({ label, value, onChangeText, placeholder, multiline }: {
+function Field({ label, value, onChangeText, placeholder, multiline, type = 'text', helper }: {
   label: string;
   value: string;
   onChangeText: (v: string) => void;
   placeholder?: string;
   multiline?: boolean;
+  type?: 'text' | 'microchip' | 'date' | 'weight';
+  helper?: string;
 }) {
   const colors = useColors();
+
+  const handleTextChange = (text: string) => {
+    if (type === 'microchip') {
+      // ISO Microchip format: 15 digits or ZWE prefix + digits
+      const cleaned = text.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15);
+      onChangeText(cleaned);
+    } else if (type === 'date') {
+      // Auto-formatting YYYY-MM-DD
+      let cleaned = text.replace(/[^0-9]/g, '');
+      if (cleaned.length > 8) cleaned = cleaned.slice(0, 8);
+
+      let formatted = cleaned;
+      if (cleaned.length > 4) {
+        formatted = cleaned.slice(0, 4) + '-' + cleaned.slice(4);
+      }
+      if (cleaned.length > 6) {
+        formatted = formatted.slice(0, 7) + '-' + formatted.slice(7);
+      }
+      onChangeText(formatted);
+    } else {
+      onChangeText(text);
+    }
+  };
+
   return (
     <View style={fStyles.wrap}>
-      <Text style={[fStyles.label, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium' }]}>{label}</Text>
+      <View style={fStyles.labelRow}>
+        <Text style={[fStyles.label, { color: colors.mutedForeground, fontFamily: 'Inter_600SemiBold' }]}>{label}</Text>
+        {type === 'microchip' && <MaterialCommunityIcons name="chip" size={14} color={colors.primary} />}
+      </View>
       <TextInput
         value={value}
-        onChangeText={onChangeText}
+        onChangeText={handleTextChange}
         placeholder={placeholder}
-        placeholderTextColor={colors.mutedForeground}
+        placeholderTextColor={colors.mutedForeground + '80'}
         multiline={multiline}
         numberOfLines={multiline ? 3 : 1}
+        keyboardType={type === 'microchip' || type === 'weight' || type === 'date' ? 'numeric' : 'default'}
         style={[
           fStyles.input,
           multiline && fStyles.multiline,
           {
-            backgroundColor: colors.card,
+            backgroundColor: colors.surfaceRaised,
             borderColor: colors.border,
             borderRadius: colors.radius - 2,
             color: colors.foreground,
-            fontFamily: 'Inter_400Regular',
+            fontFamily: 'Inter_500Medium',
           },
         ]}
       />
+      {helper && <Text style={[fStyles.helper, { color: colors.mutedForeground }]}>{helper}</Text>}
     </View>
   );
 }
 
 const fStyles = StyleSheet.create({
-  wrap: { gap: 6, marginBottom: 14 },
-  label: { fontSize: 12, letterSpacing: 0.5 },
-  input: { borderWidth: 1, paddingHorizontal: 14, paddingVertical: 12, fontSize: 14 },
+  wrap: { gap: 6, marginBottom: 16 },
+  labelRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
+  label: { fontSize: 11, letterSpacing: 1 },
+  input: { borderWidth: 1, paddingHorizontal: 14, paddingVertical: 14, fontSize: 15 },
   multiline: { minHeight: 80, textAlignVertical: 'top' },
+  helper: { fontSize: 10, marginTop: 2, opacity: 0.8 },
 });
 
 /** Confirmation card shown after a successful blockchain submission */
@@ -279,28 +313,31 @@ export default function AddScreen() {
         {mode === 'dog' ? (
           <>
             {/* Workflow banner */}
-            <View style={[styles.workflowBanner, { backgroundColor: colors.primary + '10', borderColor: colors.primary + '30', borderRadius: colors.radius }]}>
-              <Text style={[styles.workflowTitle, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>Blockchain Workflow</Text>
+            <LinearGradient
+              colors={[colors.primary + '15', colors.primary + '05']}
+              style={[styles.workflowBanner, { borderColor: colors.primary + '30', borderRadius: colors.radius }]}
+            >
+              <Text style={[styles.workflowTitle, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>BLOCKCHAIN WORKFLOW</Text>
               <View style={styles.workflowSteps}>
-                {['Microchip', 'Blockchain', 'Breed History', 'Health Records', 'Certification'].map((step, i, arr) => (
+                {['Microchip', 'Ledger', 'Lineage', 'Health', 'Certify'].map((step, i, arr) => (
                   <React.Fragment key={step}>
-                    <Text style={[styles.workflowStep, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}>{step}</Text>
+                    <Text style={[styles.workflowStep, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}>{step}</Text>
                     {i < arr.length - 1 && (
-                      <MaterialCommunityIcons name="arrow-right" size={12} color={colors.primary} />
+                      <MaterialCommunityIcons name="chevron-right" size={14} color={colors.primary} />
                     )}
                   </React.Fragment>
                 ))}
               </View>
-            </View>
+            </LinearGradient>
 
             <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>① Identity</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>① IDENTITY</Text>
               <Field label="DOG NAME *" value={name} onChangeText={setName} placeholder="e.g. Rex" />
-              <Field label="BREED *" value={breed} onChangeText={setBreed} placeholder="e.g. German Shepherd" />
+              <Field label="BREED *" value={breed} onChangeText={setBreed} placeholder="e.g. Boerboel" />
 
               {/* Gender toggle */}
               <View style={fStyles.wrap}>
-                <Text style={[fStyles.label, { color: colors.mutedForeground, fontFamily: 'Inter_500Medium' }]}>GENDER *</Text>
+                <Text style={[fStyles.label, { color: colors.mutedForeground, fontFamily: 'Inter_600SemiBold' }]}>GENDER *</Text>
                 <View style={styles.genderRow}>
                   {(['male', 'female'] as Gender[]).map(g => (
                     <TouchableOpacity
@@ -319,7 +356,7 @@ export default function AddScreen() {
                       />
                       <Text style={[styles.genderText, {
                         color: gender === g ? colors.primaryForeground : colors.mutedForeground,
-                        fontFamily: 'Inter_500Medium',
+                        fontFamily: 'Inter_600SemiBold',
                       }]}>
                         {g.charAt(0).toUpperCase() + g.slice(1)}
                       </Text>
@@ -329,32 +366,26 @@ export default function AddScreen() {
               </View>
 
               <Field label="COLOR / COAT *" value={color} onChangeText={setColor} placeholder="e.g. Black & Tan" />
-              <Field label="DATE OF BIRTH *" value={birthDate} onChangeText={setBirthDate} placeholder="YYYY-MM-DD" />
-              <Field label="WEIGHT" value={weight} onChangeText={setWeight} placeholder="e.g. 32 kg" />
+              <Field label="DATE OF BIRTH *" value={birthDate} onChangeText={setBirthDate} placeholder="YYYY-MM-DD" type="date" helper="Auto-formats: YYYY-MM-DD" />
+              <Field label="WEIGHT" value={weight} onChangeText={setWeight} placeholder="e.g. 32" type="weight" helper="In kilograms (kg)" />
             </View>
 
             <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>② Microchip Data</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>② MICROCHIP DATA</Text>
               <View style={[styles.infoBox, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: colors.radius - 2 }]}>
                 <MaterialCommunityIcons name="chip" size={18} color={colors.primary} />
                 <Text style={[styles.infoText, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
-                  The ISO microchip ID is the primary key linked to the blockchain record. It uniquely identifies this dog across the ZCR network.
+                  The ISO microchip ID is the primary key linked to the blockchain record.
                 </Text>
               </View>
-              <Field label="ISO MICROCHIP ID *" value={microchipId} onChangeText={setMicrochipId} placeholder="ZWE000001234567" />
+              <Field label="ISO MICROCHIP ID *" value={microchipId} onChangeText={setMicrochipId} placeholder="15-digit ID" type="microchip" helper="Maximum 15 characters" />
               <Field label="DNA HASH (optional)" value={dnaHash} onChangeText={setDnaHash} placeholder="SHA256:..." />
             </View>
 
             <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>③ Breed History</Text>
-              <View style={[styles.infoBox, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: colors.radius - 2 }]}>
-                <MaterialCommunityIcons name="dog-side" size={18} color={colors.primary} />
-                <Text style={[styles.infoText, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
-                  Parent microchips link this dog's lineage to existing ZCR records, forming a verifiable breed history on the blockchain.
-                </Text>
-              </View>
-              <Field label="DAME MICROCHIP (Mother)" value={dameMicrochip} onChangeText={setDameMicrochip} placeholder="Mother's chip ID" />
-              <Field label="SIRE MICROCHIP (Father)" value={sireMicrochip} onChangeText={setSireMicrochip} placeholder="Father's chip ID" />
+              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>③ BREED HISTORY</Text>
+              <Field label="DAME MICROCHIP (Mother)" value={dameMicrochip} onChangeText={setDameMicrochip} placeholder="Mother's chip ID" type="microchip" />
+              <Field label="SIRE MICROCHIP (Father)" value={sireMicrochip} onChangeText={setSireMicrochip} placeholder="Father's chip ID" type="microchip" />
               <Field label="LITTER ID" value={litterId} onChangeText={setLitterId} placeholder="e.g. LIT-2024-001" />
             </View>
 
@@ -421,16 +452,16 @@ export default function AddScreen() {
         ) : (
           <>
             <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
-              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>Litter Details</Text>
+              <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>LITTER DETAILS</Text>
               <View style={[styles.infoBox, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: colors.radius - 2 }]}>
                 <Ionicons name="information-circle" size={18} color={colors.primary} />
                 <Text style={[styles.infoText, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>
                   Both parent dogs must already be registered on the ZCR before litter registration.
                 </Text>
               </View>
-              <Field label="DAME MICROCHIP *" value={lDame} onChangeText={setLDame} placeholder="Mother's ZCR chip ID" />
-              <Field label="SIRE MICROCHIP *" value={lSire} onChangeText={setLSire} placeholder="Father's ZCR chip ID" />
-              <Field label="EXPECTED BIRTH DATE *" value={lExpectedDate} onChangeText={setLExpectedDate} placeholder="YYYY-MM-DD" />
+              <Field label="DAME MICROCHIP *" value={lDame} onChangeText={setLDame} placeholder="Mother's ZCR chip ID" type="microchip" />
+              <Field label="SIRE MICROCHIP *" value={lSire} onChangeText={setLSire} placeholder="Father's ZCR chip ID" type="microchip" />
+              <Field label="EXPECTED BIRTH DATE *" value={lExpectedDate} onChangeText={setLExpectedDate} placeholder="YYYY-MM-DD" type="date" />
             </View>
             <GoldButton title="Pre-Register Litter" onPress={handleRegisterLitter} loading={saving} size="lg" />
           </>

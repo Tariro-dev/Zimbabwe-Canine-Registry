@@ -4,6 +4,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import * as Haptics from 'expo-haptics';
 import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { GoldButton } from '@/components/GoldButton';
@@ -126,12 +127,17 @@ export default function VerifyScreen() {
         <View style={[styles.inputWrap, { backgroundColor: colors.surfaceRaised, borderColor: colors.border, borderRadius: colors.radius - 2 }]}>
           <TextInput
             value={input}
-            onChangeText={t => { setInput(t); setSearched(false); }}
+            onChangeText={t => {
+              const cleaned = t.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 15);
+              setInput(cleaned);
+              setSearched(false);
+            }}
             placeholder="ISO Microchip ID"
-            placeholderTextColor={colors.mutedForeground}
-            style={[styles.textInput, { color: colors.foreground, fontFamily: 'Inter_500Medium' }]}
+            placeholderTextColor={colors.mutedForeground + '80'}
+            style={[styles.textInput, { color: colors.foreground, fontFamily: 'Inter_600SemiBold' }]}
             autoCapitalize="characters"
             returnKeyType="search"
+            maxLength={15}
             onSubmitEditing={() => handleVerify(input)}
           />
           {input.length > 0 && (
@@ -141,7 +147,7 @@ export default function VerifyScreen() {
           )}
         </View>
 
-        <GoldButton title="Verify Manually" onPress={() => handleVerify(input)} />
+        <GoldButton title="Verify Record" onPress={() => handleVerify(input)} />
       </View>
 
       {/* Results */}
@@ -159,10 +165,15 @@ export default function VerifyScreen() {
       {searched && result && (
         <View style={[styles.resultCard, { backgroundColor: colors.card, borderColor: colors.primary + '40', borderRadius: colors.radius }]}>
           <View style={styles.resultHeader}>
-            <View style={[styles.verifiedBadge, { backgroundColor: colors.success + '18', borderColor: colors.success + '40', borderRadius: colors.radius - 4 }]}>
-              <Ionicons name="checkmark-circle" size={18} color={colors.success} />
-              <Text style={[styles.verifiedText, { color: colors.success, fontFamily: 'Inter_700Bold' }]}>VERIFIED ON ZCR</Text>
-            </View>
+            <LinearGradient
+              colors={[colors.success + '20', colors.success + '05']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 0 }}
+              style={[styles.verifiedBadge, { borderColor: colors.success + '40', borderRadius: colors.radius - 4 }]}
+            >
+              <Ionicons name="shield-checkmark" size={16} color={colors.success} />
+              <Text style={[styles.verifiedText, { color: colors.success, fontFamily: 'Inter_700Bold' }]}>VERIFIED ON LEDGER</Text>
+            </LinearGradient>
           </View>
 
           <Text style={[styles.dogName, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>{result.name}</Text>
