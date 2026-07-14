@@ -25,6 +25,7 @@ export function Sidebar() {
     { href: '/dogs', label: 'My Dogs', icon: Dog },
     { href: '/dogs/register', label: 'Register Dog', icon: PlusCircle },
     { href: '/verify', label: 'Verify Identity', icon: Search },
+    { href: '/explorer', label: 'Ledger Explorer', icon: History },
     { href: '/litters', label: 'Litter Records', icon: ListPlus },
     { href: '/regulator', label: 'Regulator', icon: ShieldCheck },
     { href: '/audit-log', label: 'Audit Logs', icon: History },

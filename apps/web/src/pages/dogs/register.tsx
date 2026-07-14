@@ -61,7 +61,9 @@ export default function RegisterDog() {
 
     const reader = new FileReader();
     reader.onload = async () => {
-      const base64 = (reader.result as string).split(',')[1];
+      const result = reader.result as string;
+      const base64 = result.split(',')[1];
+      setPreviewUrl(result);
       setAiSuggestions(null);
 
       const promise = identifyBreed.mutateAsync({
@@ -174,6 +176,15 @@ export default function RegisterDog() {
                       </div>
                     </FormLabel>
                     <FormControl><Input {...field} /></FormControl>
+                    {identifyBreed.isPending && previewUrl && (
+                      <div className="relative mt-4 w-full h-48 rounded-2xl overflow-hidden border border-primary/30">
+                        <img src={previewUrl} className="w-full h-full object-cover grayscale opacity-50" />
+                        <div className="scanline" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <p className="text-[10px] font-mono font-bold tracking-[0.5em] text-primary animate-pulse">ANALYZING_BIOMETRICS...</p>
+                        </div>
+                      </div>
+                    )}
                     {aiSuggestions && (
                       <div className="flex flex-wrap gap-2 mt-2 p-3 bg-primary/5 border border-primary/20 rounded-xl">
                         <span className="text-[10px] font-bold text-muted-foreground w-full mb-1 uppercase tracking-wider">AI Results:</span>
