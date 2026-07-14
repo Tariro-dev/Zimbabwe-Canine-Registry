@@ -646,3 +646,15 @@ export const TransferDogOwnershipResponse = zod.object({
 })
 
 
+export const IdentifyBreedBody = zod.object({
+  "image": zod.string().describe('Base64 encoded image')
+})
+
+export const IdentifyBreedResponse = zod.object({
+  "predictions": zod.array(zod.object({
+  "breed": zod.string(),
+  "confidence": zod.number()
+}))
+})
+
+

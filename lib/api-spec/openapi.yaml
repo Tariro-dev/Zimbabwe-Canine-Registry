@@ -15,6 +15,7 @@ tags:
   - name: transfers
   - name: notifications
   - name: media
+  - name: ai
 
 paths:
   /healthz:
@@ -489,6 +490,27 @@ paths:
               schema:
                 $ref: "#/components/schemas/Dog"
 
+  /ai/identify-breed:
+    post:
+      operationId: identifyBreed
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                image: { type: string, description: "Base64 encoded image" }
+              required: [image]
+      responses:
+        "200":
+          description: Identified breeds
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/BreedIdentificationResponse"
+
 components:
   schemas:
     HealthStatus:
@@ -722,3 +744,16 @@ components:
         color: { type: string }
         microchipId: { type: string }
       required: [name, gender, color, microchipId]
+
+    BreedIdentificationResponse:
+      type: object
+      properties:
+        predictions:
+          type: array
+          items:
+            type: object
+            properties:
+              breed: { type: string }
+              confidence: { type: number }
+            required: [breed, confidence]
+      required: [predictions]

@@ -5,6 +5,8 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import * as Haptics from 'expo-haptics';
 import { LinearGradient } from 'expo-linear-gradient';
+import * as ImagePicker from 'expo-image-picker';
+import { useIdentifyBreed } from '@workspace/api-client-react';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
 import { GoldButton } from '@/components/GoldButton';
@@ -181,6 +183,11 @@ export default function AddScreen() {
   const [saving, setSaving] = useState(false);
   const [confirmedDog, setConfirmedDog] = useState<Dog | null>(null);
 
+  // AI Breed state
+  const identifyBreedMutation = useIdentifyBreed();
+  const [isIdentifying, setIsIdentifying] = useState(false);
+  const [aiSuggestions, setAiSuggestions] = useState<{ breed: string; confidence: number }[] | null>(null);
+
   if (user?.role !== 'breeder' && user?.role !== 'regulator') {
     return (
       <View style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center', padding: 24 }]}>
@@ -214,6 +221,32 @@ export default function AddScreen() {
   const [lDame, setLDame] = useState('');
   const [lSire, setLSire] = useState('');
   const [lExpectedDate, setLExpectedDate] = useState('');
+
+  const handleIdentifyBreed = async () => {
+    try {
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [4, 3],
+        quality: 0.5,
+        base64: true,
+      });
+
+      if (!result.canceled && result.assets[0].base64) {
+        setIsIdentifying(true);
+        setAiSuggestions(null);
+
+        const response = await identifyBreedMutation.mutateAsync({
+          data: { image: result.assets[0].base64 }
+        });
+
+        setAiSuggestions(response.predictions);
+      }
+    } catch (error) {
+      Alert.alert('AI Error', 'Failed to identify breed. Please try again.');
+    } finally {
+      setIsIdentifying(false);
+    }
+  };
 
   const resetDogForm = () => {
     setName(''); setBreed(''); setGender('male'); setColor(''); setBirthDate('');
@@ -336,7 +369,37 @@ export default function AddScreen() {
             <View style={[styles.section, { backgroundColor: colors.card, borderColor: colors.border, borderRadius: colors.radius }]}>
               <Text style={[styles.sectionTitle, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>① IDENTITY</Text>
               <Field label="DOG NAME *" value={name} onChangeText={setName} placeholder="e.g. Rex" />
-              <Field label="BREED *" value={breed} onChangeText={setBreed} placeholder="e.g. Boerboel" />
+
+              <View style={{ marginBottom: 16 }}>
+                <Field label="BREED *" value={breed} onChangeText={setBreed} placeholder="e.g. Boerboel" />
+                <TouchableOpacity
+                  onPress={handleIdentifyBreed}
+                  disabled={isIdentifying}
+                  style={[styles.aiBtn, { borderColor: colors.primary + '40', backgroundColor: colors.primary + '08' }]}
+                >
+                  <MaterialCommunityIcons name="auto-fix" size={16} color={colors.primary} />
+                  <Text style={[styles.aiBtnText, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>
+                    {isIdentifying ? 'AI ANALYZING...' : 'AI BREED IDENTIFIER'}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {aiSuggestions && (
+                <View style={[styles.aiSuggestions, { backgroundColor: colors.surfaceRaised, borderColor: colors.primary + '30' }]}>
+                  <Text style={[styles.aiSuggestionsTitle, { color: colors.mutedForeground }]}>AI SUGGESTIONS:</Text>
+                  <View style={styles.aiSuggestionsRow}>
+                    {aiSuggestions.map((s, idx) => (
+                      <TouchableOpacity
+                        key={idx}
+                        onPress={() => { setBreed(s.breed); setAiSuggestions(null); }}
+                        style={[styles.aiTag, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}
+                      >
+                        <Text style={[styles.aiTagText, { color: colors.primary }]}>{s.breed} {Math.round(s.confidence * 100)}%</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+              )}
 
               {/* Gender toggle */}
               <View style={fStyles.wrap}>
@@ -503,4 +566,11 @@ const styles = StyleSheet.create({
   blockchainStepWrap: { alignItems: 'center', gap: 4 },
   blockchainStepIcon: { width: 36, height: 36, borderRadius: 18, borderWidth: 1, alignItems: 'center', justifyContent: 'center' },
   blockchainStepLabel: { fontSize: 9, letterSpacing: 0.3 },
+  aiBtn: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', paddingVertical: 8, borderWidth: 1, borderStyle: 'dashed', borderRadius: 8, gap: 8, marginTop: -8 },
+  aiBtnText: { fontSize: 11, letterSpacing: 0.5 },
+  aiSuggestions: { padding: 12, borderWidth: 1, borderRadius: 10, marginBottom: 16, gap: 8 },
+  aiSuggestionsTitle: { fontSize: 10, fontFamily: 'Inter_700Bold', letterSpacing: 0.5 },
+  aiSuggestionsRow: { flexDirection: 'row', flexWrap: 'wrap', gap: 6 },
+  aiTag: { paddingHorizontal: 10, paddingVertical: 6, borderWidth: 1, borderRadius: 20 },
+  aiTagText: { fontSize: 11, fontFamily: 'Inter_600SemiBold' },
 });

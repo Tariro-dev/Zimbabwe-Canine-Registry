@@ -20,6 +20,7 @@ import type {
 } from '@tanstack/react-query';
 
 import type {
+  BreedIdentificationResponse,
   DashboardStats,
   Dog,
   DogInput,
@@ -27,6 +28,7 @@ import type {
   GetDogPedigreeParams,
   HealthStatus,
   HealthUpdate,
+  IdentifyBreedBody,
   Litter,
   LitterInput,
   MediaInput,
@@ -1912,5 +1914,69 @@ const {mutation: mutationOptions, request: requestOptions} = options ?
         TContext
       > => {
       return useMutation(getTransferDogOwnershipMutationOptions(options));
+    }
+
+export const getIdentifyBreedUrl = () => {
+
+
+
+
+  return `/api/ai/identify-breed`
+}
+
+export const identifyBreed = async (identifyBreedBody: IdentifyBreedBody, options?: RequestInit): Promise<BreedIdentificationResponse> => {
+
+  return customFetch<BreedIdentificationResponse>(getIdentifyBreedUrl(),
+  {
+    ...options,
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', ...options?.headers },
+    body: JSON.stringify(identifyBreedBody)
+  }
+);}
+
+
+
+
+export const getIdentifyBreedMutationOptions = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof identifyBreed>>, TError,{data: BodyType<IdentifyBreedBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+): UseMutationOptions<Awaited<ReturnType<typeof identifyBreed>>, TError,{data: BodyType<IdentifyBreedBody>}, TContext> => {
+
+const mutationKey = ['identifyBreed'];
+const {mutation: mutationOptions, request: requestOptions} = options ?
+      options.mutation && 'mutationKey' in options.mutation && options.mutation.mutationKey ?
+      options
+      : {...options, mutation: {...options.mutation, mutationKey}}
+      : {mutation: { mutationKey, }, request: undefined};
+
+
+
+
+      const mutationFn: MutationFunction<Awaited<ReturnType<typeof identifyBreed>>, {data: BodyType<IdentifyBreedBody>}> = (props) => {
+          const {data} = props ?? {};
+
+          return  identifyBreed(data,requestOptions)
+        }
+
+
+
+
+
+
+  return  { mutationFn, ...mutationOptions }}
+
+    export type IdentifyBreedMutationResult = NonNullable<Awaited<ReturnType<typeof identifyBreed>>>
+    export type IdentifyBreedMutationBody = BodyType<IdentifyBreedBody>
+    export type IdentifyBreedMutationError = ErrorType<unknown>
+
+    export const useIdentifyBreed = <TError = ErrorType<unknown>,
+    TContext = unknown>(options?: { mutation?:UseMutationOptions<Awaited<ReturnType<typeof identifyBreed>>, TError,{data: BodyType<IdentifyBreedBody>}, TContext>, request?: SecondParameter<typeof customFetch>}
+ ): UseMutationResult<
+        Awaited<ReturnType<typeof identifyBreed>>,
+        TError,
+        {data: BodyType<IdentifyBreedBody>},
+        TContext
+      > => {
+      return useMutation(getIdentifyBreedMutationOptions(options));
     }
 

@@ -9,6 +9,8 @@
 export * from './activityItem';
 export * from './breederCertification';
 export * from './breederCertificationStatus';
+export * from './breedIdentificationResponse';
+export * from './breedIdentificationResponsePredictionsItem';
 export * from './dashboardStats';
 export * from './dog';
 export * from './dogBlockchainSyncStatus';
@@ -23,6 +25,7 @@ export * from './getDogPedigreeParams';
 export * from './healthStatus';
 export * from './healthUpdate';
 export * from './healthUpdateSterilizationStatus';
+export * from './identifyBreedBody';
 export * from './litter';
 export * from './litterInput';
 export * from './mediaInput';

@@ -269,7 +269,6 @@ export interface UserProfile {
   name: string;
   role: UserProfileRole;
   registeredAt: string;
-  isEmailVerified: boolean;
   /** @nullable */
   kennelName?: string | null;
   /** @nullable */
@@ -317,6 +316,15 @@ export interface PuppyRegistrationInput {
   puppies: PuppyInput[];
 }
 
+export type BreedIdentificationResponsePredictionsItem = {
+  breed: string;
+  confidence: number;
+};
+
+export interface BreedIdentificationResponse {
+  predictions: BreedIdentificationResponsePredictionsItem[];
+}
+
 export type SearchDogByMicrochipParams = {
 microchip: string;
 };
@@ -336,5 +344,10 @@ export const RespondToTransferBodyAction = {
 
 export type RespondToTransferBody = {
   action: RespondToTransferBodyAction;
+};
+
+export type IdentifyBreedBody = {
+  /** Base64 encoded image */
+  image: string;
 };
 

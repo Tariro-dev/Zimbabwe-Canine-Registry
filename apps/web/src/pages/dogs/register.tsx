@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useCreateDog, useGetMyProfile } from '@workspace/api-client-react';
+import { useCreateDog, useGetMyProfile, useIdentifyBreed } from '@workspace/api-client-react';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -10,6 +10,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
+import { Sparkles, Upload } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   name: z.string().min(1, "Name is required"),
@@ -30,6 +32,9 @@ export default function RegisterDog() {
   const [, setLocation] = useLocation();
   const createDog = useCreateDog();
   const { data: profile } = useGetMyProfile();
+  const identifyBreed = useIdentifyBreed();
+  const [aiSuggestions, setAiSuggestions] = React.useState<{ breed: string; confidence: number }[] | null>(null);
+  const fileInputRef = React.useRef<HTMLInputElement>(null);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -48,6 +53,31 @@ export default function RegisterDog() {
       sterilizationStatus: "Not Sterilized"
     }
   });
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = async () => {
+      const base64 = (reader.result as string).split(',')[1];
+      setAiSuggestions(null);
+
+      const promise = identifyBreed.mutateAsync({
+        data: { image: base64 }
+      });
+
+      toast.promise(promise, {
+        loading: 'AI analyzing breed from photo...',
+        success: (res) => {
+          setAiSuggestions(res.predictions);
+          return 'Analysis complete. See suggestions below.';
+        },
+        error: 'AI analysis failed.'
+      });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
     if (!profile) {
@@ -120,8 +150,44 @@ export default function RegisterDog() {
                 name="breed"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Breed</FormLabel>
+                    <FormLabel className="flex justify-between items-center">
+                      Breed
+                      <div className="flex gap-2">
+                        <input
+                          type="file"
+                          className="hidden"
+                          ref={fileInputRef}
+                          accept="image/*"
+                          onChange={handleFileUpload}
+                        />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className="h-6 text-[10px] text-primary font-bold gap-1 uppercase hover:bg-primary/10"
+                          onClick={() => fileInputRef.current?.click()}
+                          disabled={identifyBreed.isPending}
+                        >
+                          <Sparkles className="w-3 h-3" /> AI Identify
+                        </Button>
+                      </div>
+                    </FormLabel>
                     <FormControl><Input {...field} /></FormControl>
+                    {aiSuggestions && (
+                      <div className="flex flex-wrap gap-2 mt-2 p-3 bg-primary/5 border border-primary/20 rounded-xl">
+                        <span className="text-[10px] font-bold text-muted-foreground w-full mb-1 uppercase tracking-wider">AI Results:</span>
+                        {aiSuggestions.map((s, idx) => (
+                          <Badge
+                            key={idx}
+                            variant="outline"
+                            className="cursor-pointer hover:bg-primary/20 border-primary/30 text-primary"
+                            onClick={() => { field.onChange(s.breed); setAiSuggestions(null); }}
+                          >
+                            {s.breed} {Math.round(s.confidence * 100)}%
+                          </Badge>
+                        ))}
+                      </div>
+                    )}
                     <FormMessage />
                   </FormItem>
                 )}
