@@ -29,8 +29,8 @@ export function AppLayout({ children }: AppLayoutProps) {
       
       {/* Mobile topbar */}
       <div className="md:hidden flex items-center justify-between p-4 glass border-b border-border sticky top-0 z-40">
-        <div className="flex items-center gap-2 font-bold text-lg tracking-tighter uppercase">
-          <img src="/favicon.svg" alt="ZCR" className="w-6 h-6" />
+        <div className="flex items-center gap-2 font-bold text-lg tracking-tighter uppercase" onClick={() => setLocation('/dashboard')}>
+          <img src="/favicon.svg" alt="ZCR" className="w-10 h-10" />
           <span>ZCR Portal</span>
         </div>
         <div className="flex items-center gap-2">
