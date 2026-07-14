@@ -123,7 +123,7 @@ export default function Dashboard() {
           title={isVet ? "Patients Verified" : isRegulator ? "Total Registered" : "My Registered Dogs"}
           value={stats.totalDogs}
           icon={Dog}
-          trend="+2 this month"
+          trend={`${stats.registeredThisMonth} this month`}
           trendPositive={true}
         />
         <StatCard 
