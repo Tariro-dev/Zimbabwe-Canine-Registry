@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useListDogs, Dog } from '@workspace/api-client-react';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
-import { Link } from 'wouter';
+import { Link, useLocation } from 'wouter';
 import {
   Search,
   Filter,
