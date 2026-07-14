@@ -269,6 +269,7 @@ export interface UserProfile {
   name: string;
   role: UserProfileRole;
   registeredAt: string;
+  isEmailVerified: boolean;
   /** @nullable */
   kennelName?: string | null;
   /** @nullable */

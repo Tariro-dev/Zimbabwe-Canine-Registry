@@ -10,23 +10,25 @@ import {
   useTransferDogOwnership,
   useToggleDogStolen,
   useUpdateMyProfile,
+  setAuthTokenGetter,
   Dog,
   Litter,
   UserProfile,
   DogSterilizationStatus,
 } from '@workspace/api-client-react';
 import { useQueryClient } from '@tanstack/react-query';
+import { customFetch } from '@workspace/api-client-react/src/custom-fetch';
 
 export type Role = 'owner' | 'breeder' | 'vet' | 'regulator';
 export type Gender = 'male' | 'female';
 export type SterilizationStatus = 'Sterilized' | 'Not Sterilized';
 
 export type { Dog, Litter };
-export type User = UserProfile & { email?: string };
+export type User = UserProfile & { email?: string; isEmailVerified?: boolean };
 
 interface RegistryContextType {
   user: User | null;
-  users: User[]; // Still mock/empty as backend doesn't list all users
+  users: User[];
   dogs: Dog[];
   litters: Litter[];
   loading: boolean;
@@ -35,6 +37,7 @@ interface RegistryContextType {
   login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
   signup: (userData: any) => Promise<{ success: boolean; message?: string }>;
   logout: () => void;
+  verifyEmail: (token: string) => Promise<{ success: boolean; message: string }>;
   addDog: (dog: any) => Promise<Dog>;
   updateHealthRecord: (dogId: string, vaccines: string, status: SterilizationStatus, lastCheckup?: string) => Promise<void>;
   transferOwnership: (dogId: string, newOwnerName: string, newOwnerId: string) => Promise<void>;
@@ -45,17 +48,33 @@ interface RegistryContextType {
 }
 
 const KEY_SECURITY = '@zcr:require_security';
+const KEY_TOKEN = '@zcr:auth_token';
 
 const RegistryContext = createContext<RegistryContextType | null>(null);
 
 export function RegistryProvider({ children }: { children: React.ReactNode }) {
   const queryClient = useQueryClient();
   const [requireDeviceSecurity, setRequireDeviceSecurityState] = useState(false);
+  const [token, setToken] = useState<string | null>(null);
+
+  // Configure api-client to use our token
+  useEffect(() => {
+    setAuthTokenGetter(async () => {
+      const stored = await AsyncStorage.getItem(KEY_TOKEN);
+      return stored;
+    });
+  }, []);
 
   // Fetch data from backend using hooks
-  const { data: userProfile, isLoading: userLoading, refetch: refetchUser } = useGetMyProfile();
-  const { data: dogsData, isLoading: dogsLoading } = useListDogs();
-  const { data: littersData, isLoading: littersLoading } = useListLitters();
+  const { data: userProfile, isLoading: userLoading, refetch: refetchUser } = useGetMyProfile({
+    query: { enabled: !!token }
+  });
+  const { data: dogsData, isLoading: dogsLoading } = useListDogs({
+    query: { enabled: !!token }
+  });
+  const { data: littersData, isLoading: littersLoading } = useListLitters({
+    query: { enabled: !!token }
+  });
 
   // Mutations
   const createDogMutation = useCreateDog();
@@ -68,8 +87,12 @@ export function RegistryProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     (async () => {
       try {
-        const sec = await AsyncStorage.getItem(KEY_SECURITY);
+        const [sec, t] = await Promise.all([
+          AsyncStorage.getItem(KEY_SECURITY),
+          AsyncStorage.getItem(KEY_TOKEN),
+        ]);
         if (sec) setRequireDeviceSecurityState(JSON.parse(sec));
+        if (t) setToken(t);
       } catch (_) {}
     })();
   }, []);
@@ -79,21 +102,52 @@ export function RegistryProvider({ children }: { children: React.ReactNode }) {
     try { await AsyncStorage.setItem(KEY_SECURITY, JSON.stringify(val)); } catch (_) {}
   };
 
-  // Mock login for now as backend just uses user-001 hardcoded
   async function login(email: string, password: string) {
-    // In a real app, this would be a POST /api/login that sets a cookie/token
-    // For now we just refetch the profile which seeds user-001
-    await refetchUser();
-    return { success: true };
+    try {
+      const res = await customFetch<{ token: string; user: any }>('/api/login', {
+        method: 'POST',
+        body: JSON.stringify({ email, password }),
+      });
+
+      await AsyncStorage.setItem(KEY_TOKEN, res.token);
+      setToken(res.token);
+      await refetchUser();
+      return { success: true };
+    } catch (err: any) {
+      return { success: false, message: err.data?.error || 'Login failed' };
+    }
   }
 
   async function signup(userData: any) {
-    // Mock signup
-    return { success: true };
+    try {
+      const res = await customFetch<{ token: string; user: any; message: string }>('/api/register', {
+        method: 'POST',
+        body: JSON.stringify(userData),
+      });
+
+      await AsyncStorage.setItem(KEY_TOKEN, res.token);
+      setToken(res.token);
+      await refetchUser();
+      return { success: true, message: res.message };
+    } catch (err: any) {
+      return { success: false, message: err.data?.error || 'Registration failed' };
+    }
   }
 
-  function logout() {
-    // Mock logout
+  async function logout() {
+    await AsyncStorage.removeItem(KEY_TOKEN);
+    setToken(null);
+    queryClient.clear();
+  }
+
+  async function verifyEmail(vToken: string) {
+    try {
+      const res = await customFetch<{ message: string }>(`/api/verify-email?token=${vToken}`);
+      await refetchUser();
+      return { success: true, message: res.message };
+    } catch (err: any) {
+      return { success: false, message: err.data?.error || 'Verification failed' };
+    }
   }
 
   async function addDog(dogData: any): Promise<Dog> {
@@ -163,6 +217,7 @@ export function RegistryProvider({ children }: { children: React.ReactNode }) {
         addLitter,
         findDogByMicrochip,
         updateUser,
+        verifyEmail,
       }}
     >
       {children}

@@ -72,6 +72,21 @@ export default function DashboardScreen() {
         </View>
       </View>
 
+      {/* Verification Warning */}
+      {user.isEmailVerified === false && (
+        <TouchableOpacity
+          style={[styles.verifyBanner, { backgroundColor: colors.warning + '15', borderColor: colors.warning + '40' }]}
+          activeOpacity={0.7}
+        >
+          <MaterialCommunityIcons name="email-alert" size={20} color={colors.warning} />
+          <View style={{ flex: 1 }}>
+            <Text style={[styles.verifyTitle, { color: colors.warning, fontFamily: 'Inter_700Bold' }]}>Verify your email</Text>
+            <Text style={[styles.verifySub, { color: colors.warning, opacity: 0.8 }]}>Some features are restricted until verified.</Text>
+          </View>
+          <Ionicons name="chevron-forward" size={16} color={colors.warning} />
+        </TouchableOpacity>
+      )}
+
       {/* Stats */}
       <Text style={[styles.sectionTitle, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>Registry Overview</Text>
       <View style={styles.statsGrid}>
@@ -175,6 +190,9 @@ const styles = StyleSheet.create({
   roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
   roleText: { fontSize: 10, letterSpacing: 0.5 },
   separatorGradient: { height: 1, marginBottom: 20, width: '100%' },
+  verifyBanner: { flexDirection: 'row', alignItems: 'center', padding: 16, borderWidth: 1, borderRadius: 12, gap: 12, marginBottom: 24 },
+  verifyTitle: { fontSize: 14 },
+  verifySub: { fontSize: 11, marginTop: 1 },
   sectionTitle: { fontSize: 17, marginBottom: 12 },
   sectionHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12, marginTop: 24 },
   seeAll: { fontSize: 13 },

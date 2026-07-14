@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { StyleSheet, Text, View, TextInput, TouchableOpacity, Image, KeyboardAvoidingView, Platform, ScrollView, Alert } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { useColors } from '@/hooks/useColors';
 import { useRegistry } from '@/context/RegistryContext';
@@ -9,18 +10,11 @@ import * as LocalAuthentication from 'expo-local-authentication';
 
 export default function LoginScreen() {
   const colors = useColors();
-  const { login, users } = useRegistry();
+  const { login } = useRegistry();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
-
-  // Auto-fill email if there's only one user
-  useEffect(() => {
-    if (users.length === 1 && !email && users[0].email) {
-      setEmail(users[0].email);
-    }
-  }, [users, email]);
 
   const handleLogin = async () => {
     if (!email.trim() || !password.trim()) {
@@ -49,27 +43,22 @@ export default function LoginScreen() {
     }
 
     const result = await LocalAuthentication.authenticateAsync({
-      promptMessage: 'Login to ZCR',
-      fallbackLabel: 'Use Device Passcode',
+      promptMessage: 'Authenticate for Zimbabwe Canine Registry',
+      fallbackLabel: 'Use Passcode',
     });
 
     if (result.success) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-
-      // If we have a user with this email, log them in
-      const userToLogin = users.find(u => u.email && u.email.toLowerCase() === email.toLowerCase());
-
-      if (userToLogin) {
-        // In a real app, you'd use a secure token.
-        // Here we'll simulate by calling login with their stored password if available,
-        // or just force a login state in the context.
-        // For this demo, let's assume we can log them in because device security passed.
-        await login(userToLogin.email || '', (userToLogin as any).password || '');
-      } else if (users.length > 0) {
-        // If no email entered, login the most recent user
-        await login(users[0].email || '', (users[0] as any).password || '');
+      // In a real production app, we would retrieve a stored secure token here.
+      // For now, we'll guide the user to log in manually first if no token exists.
+      const storedToken = await AsyncStorage.getItem('@zcr:auth_token');
+      if (storedToken) {
+        // If we have a token, the RegistryProvider will pick it up on state change
+        // But we need to trigger a re-render or state update in context
+        // For this demo, let's just alert the user to login manually if they're seeing this screen.
+        Alert.alert('Authenticated', 'Please log in with your email/password once to link your device.');
       } else {
-        Alert.alert('No Account Found', 'Please sign up first.');
+        Alert.alert('Manual Login Required', 'Please log in manually first to enable biometric shortcuts.');
       }
     }
   };

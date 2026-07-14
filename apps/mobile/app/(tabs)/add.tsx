@@ -247,6 +247,9 @@ export default function AddScreen() {
       });
       resetDogForm();
       setConfirmedDog(newDog);
+    } catch (err: any) {
+      const msg = err.data?.error || 'Failed to register dog. Please try again.';
+      Alert.alert('Registration Error', msg);
     } finally {
       setSaving(false);
     }
