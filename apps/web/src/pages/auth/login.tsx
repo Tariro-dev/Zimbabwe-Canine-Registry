@@ -37,7 +37,11 @@ export default function Login() {
       toast.success("Authentication successful");
       setLocation('/dashboard');
     } catch (error: any) {
-      toast.error(error.message);
+      if (error.message.includes('Failed to fetch')) {
+        toast.error("Connection Refused: The backend server is currently starting up or offline. Please wait a moment and try again.");
+      } else {
+        toast.error(error.message);
+      }
     } finally {
       setLoading(false);
     }

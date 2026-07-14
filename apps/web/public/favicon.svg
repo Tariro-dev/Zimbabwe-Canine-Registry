@@ -1,44 +1,22 @@
-<svg width="1024" height="1024" viewBox="0 0 1024 1024" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <rect width="1024" height="1024" rx="200" fill="#0A0A0A"/>
-
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="512" height="512" rx="128" fill="#050505"/>
+  <path d="M256 160C220 160 190 190 190 226C190 262 220 292 256 292C292 292 322 262 322 226C322 190 292 160 256 160Z" fill="url(#gold_grad)"/>
+  <circle cx="150" cy="180" r="45" fill="url(#gold_grad)"/>
+  <circle cx="362" cy="180" r="45" fill="url(#gold_grad)"/>
+  <circle cx="80" cy="280" r="40" fill="url(#gold_grad)"/>
+  <circle cx="432" cy="280" r="40" fill="url(#gold_grad)"/>
+  <path d="M256 310C210 310 160 340 160 410C160 460 210 480 256 480C302 480 352 460 352 410C352 340 302 310 256 310Z" fill="url(#gold_grad)"/>
+  <!-- Dog silhouette approximation -->
+  <path d="M256 340C230 340 210 360 210 390C210 430 230 450 256 450C282 450 302 430 302 390C302 360 282 340 256 340ZM256 360C270 360 280 370 280 390C280 410 270 425 256 425C242 425 232 410 232 390C232 370 242 360 256 360Z" fill="#050505"/>
+  <path d="M245 365L230 345L220 365H245Z" fill="#050505"/>
+  <path d="M267 365L282 345L292 365H267Z" fill="#050505"/>
   <defs>
-    <linearGradient id="gold-gradient" x1="512" y1="200" x2="512" y2="850" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#F5E0A3"/>
-      <stop offset="0.5" stop-color="#D4AF37"/>
-      <stop offset="1" stop-color="#8B6B23"/>
+    <linearGradient id="gold_grad" x1="0" y1="0" x2="512" y2="512" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#A6893A"/>
+      <stop offset="0.3" stop-color="#E5D096"/>
+      <stop offset="0.5" stop-color="#C9A84C"/>
+      <stop offset="0.7" stop-color="#E5D096"/>
+      <stop offset="1" stop-color="#A6893A"/>
     </linearGradient>
-    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-      <feGaussianBlur stdDeviation="10" result="blur"/>
-      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
-    </filter>
   </defs>
-
-  <g filter="url(#glow)">
-    <!-- Pads -->
-    <ellipse cx="230" cy="450" rx="90" ry="140" fill="url(#gold-gradient)" transform="rotate(-30, 230, 450)"/>
-    <ellipse cx="410" cy="270" rx="95" ry="160" fill="url(#gold-gradient)" transform="rotate(-10, 410, 270)"/>
-    <ellipse cx="614" cy="270" rx="95" ry="160" fill="url(#gold-gradient)" transform="rotate(10, 614, 270)"/>
-    <ellipse cx="794" cy="450" rx="90" ry="140" fill="url(#gold-gradient)" transform="rotate(30, 794, 450)"/>
-
-    <!-- Large Palm Pad -->
-    <path d="M512 400
-             C370 400 300 500 300 680
-             C300 860 400 920 512 920
-             C624 920 724 860 724 680
-             C724 500 654 400 512 400 Z" fill="url(#gold-gradient)"/>
-
-    <!-- Precision Hand-Drawn Dog Silhouette Matching the provided image -->
-    <path d="M430 780
-             C410 750 400 680 415 620
-             C425 570 445 530 475 515
-             L490 420
-             L530 520
-             C550 510 570 510 590 525
-             L610 420
-             L635 525
-             C665 540 685 580 690 630
-             C695 680 685 750 660 800
-             C635 850 580 880 512 880
-             C445 880 430 830 430 780 Z" fill="#0A0A0A"/>
-  </g>
 </svg>

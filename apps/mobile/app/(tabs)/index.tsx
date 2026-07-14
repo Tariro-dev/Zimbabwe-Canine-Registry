@@ -59,17 +59,29 @@ export default function DashboardScreen() {
         style={styles.separatorGradient}
       />
 
-      <View style={styles.welcomeRow}>
-        <View>
-          <Text style={[styles.greeting, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>Good morning,</Text>
-          <Text style={[styles.userName, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>
-            {user.name.split(' ')[0]}
-          </Text>
+      {/* Welcome Banner */}
+      <View style={[styles.welcomeBanner, { backgroundColor: '#0A0A0A', borderColor: colors.primary + '30', borderRadius: 24, borderWidth: 1, padding: 20, marginBottom: 24, overflow: 'hidden' }]}>
+        <LinearGradient
+          colors={[colors.primary + '15', 'transparent']}
+          start={{ x: 1, y: 0 }}
+          end={{ x: 0, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.welcomeRow}>
+          <View>
+            <Text style={[styles.greeting, { color: colors.mutedForeground, fontFamily: 'Inter_400Regular' }]}>Welcome back,</Text>
+            <Text style={[styles.userName, { color: colors.foreground, fontFamily: 'Inter_700Bold' }]}>
+              {user.name.split(' ')[0]}
+            </Text>
+          </View>
+          <View style={[styles.roleBadge, { backgroundColor: colors.primary + '20', borderColor: colors.primary + '40' }]}>
+            <MaterialCommunityIcons name="shield-check" size={14} color={colors.primary} />
+            <Text style={[styles.roleText, { color: colors.primary, fontFamily: 'Inter_700Bold' }]}>{user.role.toUpperCase()}</Text>
+          </View>
         </View>
-        <View style={[styles.roleBadge, { backgroundColor: colors.primary + '15', borderColor: colors.primary + '30' }]}>
-          <MaterialCommunityIcons name="shield-check" size={14} color={colors.primary} />
-          <Text style={[styles.roleText, { color: colors.primary, fontFamily: 'Inter_600SemiBold' }]}>VERIFIED BREEDER</Text>
-        </View>
+        <Text style={{ color: colors.mutedForeground, fontSize: 12, marginTop: 8, lineHeight: 18 }}>
+          Your identity is secured on the National Canine Blockchain. All records are currently synchronized.
+        </Text>
       </View>
 
       {/* Verification Warning */}
@@ -187,6 +199,7 @@ const styles = StyleSheet.create({
   welcomeRow: { flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 24 },
   greeting: { fontSize: 13, marginBottom: 2 },
   userName: { fontSize: 22 },
+  welcomeBanner: { position: 'relative' },
   roleBadge: { flexDirection: 'row', alignItems: 'center', gap: 6, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 20, borderWidth: 1 },
   roleText: { fontSize: 10, letterSpacing: 0.5 },
   separatorGradient: { height: 1, marginBottom: 20, width: '100%' },

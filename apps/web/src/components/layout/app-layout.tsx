@@ -1,6 +1,6 @@
 import * as React from 'react';
 import { Sidebar } from './sidebar';
-import { Menu, Search, Bell, Mail, Sun, Moon, User } from 'lucide-react';
+import { Menu, Search, Bell, Mail, Sun, Moon, User, AlertTriangle } from 'lucide-react';
 import { Link, useLocation } from 'wouter';
 import { NotificationCenter } from '../notification-center';
 import { Input } from '@/components/ui/input';
@@ -21,12 +21,13 @@ export function AppLayout({ children }: AppLayoutProps) {
 
   const isPublicPath = location === '/verify' || location.startsWith('/explorer') || location === '/';
 
-  const { data: profile, isLoading } = useGetMyProfile({
+  const { data: profile, isLoading, error } = useGetMyProfile({
     query: {
       enabled: !!token && !isPublicPath,
       staleTime: 5 * 60 * 1000,
       gcTime: 10 * 60 * 1000,
-      retry: false,
+      retry: 3,
+      retryDelay: 2000,
     }
   });
 
@@ -35,6 +36,27 @@ export function AppLayout({ children }: AppLayoutProps) {
       setLocation('/login');
     }
   }, [isLoading, setLocation, token, isPublicPath]);
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div className="w-20 h-20 bg-destructive/10 text-destructive rounded-[2rem] flex items-center justify-center mb-6 border border-destructive/20 shadow-2xl">
+          <AlertTriangle className="w-10 h-10" />
+        </div>
+        <h1 className="text-2xl font-bold mb-2">Registry Connection Offline</h1>
+        <p className="text-muted-foreground max-w-sm mb-8">
+          The national blockchain node is currently synchronizing or offline. Please ensure the backend server is running and try again.
+        </p>
+        <Button
+          variant="outline"
+          className="border-primary/30 text-primary"
+          onClick={() => window.location.reload()}
+        >
+          Retry Connection
+        </Button>
+      </div>
+    );
+  }
 
   if (isLoading) {
     return (
