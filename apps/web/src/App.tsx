@@ -48,6 +48,9 @@ function Router() {
       <Route path="/dogs">
         <AppLayout><DogsList /></AppLayout>
       </Route>
+      <Route path="/dogs/register">
+        <AppLayout><RegisterDog /></AppLayout>
+      </Route>
       <Route path="/dogs/:id">
         {(params) => <AppLayout><DogDetail id={params.id} /></AppLayout>}
       </Route>
@@ -86,7 +89,7 @@ function App() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem={false} forcedTheme="dark">
+      <ThemeProvider attribute="class" defaultTheme="dark" enableSystem>
         <TooltipProvider>
           {showSplash ? (
             <SplashScreen onComplete={() => setShowSplash(false)} />

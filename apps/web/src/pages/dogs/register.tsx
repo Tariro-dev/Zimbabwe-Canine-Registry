@@ -2,7 +2,7 @@ import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
-import { useCreateDog, DogInputGender, DogInputSterilizationStatus } from '@workspace/api-client-react';
+import { useCreateDog, useGetMyProfile } from '@workspace/api-client-react';
 import { useLocation } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -29,6 +29,7 @@ const formSchema = z.object({
 export default function RegisterDog() {
   const [, setLocation] = useLocation();
   const createDog = useCreateDog();
+  const { data: profile } = useGetMyProfile();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -49,15 +50,20 @@ export default function RegisterDog() {
   });
 
   const onSubmit = (data: z.infer<typeof formSchema>) => {
+    if (!profile) {
+      toast.error("You must be logged in to register a dog.");
+      return;
+    }
+
     createDog.mutate(
       { data: data as any },
       {
         onSuccess: (res) => {
-          toast.success("Dog registered successfully on the blockchain.");
+          toast.success(`${data.name} has been registered and anchored on the blockchain.`);
           setLocation(`/dogs/${res.id}`);
         },
         onError: (err) => {
-          toast.error("Failed to register dog.");
+          toast.error("Failed to register dog on the blockchain.");
         }
       }
     );

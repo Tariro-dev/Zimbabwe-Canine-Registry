@@ -16,7 +16,7 @@ import {
   ChevronRight,
   Plus
 } from 'lucide-react';
-import { format } from 'date-fns';
+import { format, intervalToDuration } from 'date-fns';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -94,6 +94,17 @@ export default function DogsList() {
 }
 
 function DogCard({ dog }: { dog: Dog }) {
+  const age = React.useMemo(() => {
+    const duration = intervalToDuration({
+      start: new Date(dog.birthDate),
+      end: new Date()
+    });
+    if (duration.years && duration.years > 0) {
+      return `${duration.years}y ${duration.months || 0}m`;
+    }
+    return `${duration.months || 0}m`;
+  }, [dog.birthDate]);
+
   return (
     <Card className="rounded-[2.5rem] bg-card/30 backdrop-blur-xl border-white/5 hover:border-primary/40 transition-all duration-500 group overflow-hidden shadow-2xl shadow-black/40">
       <div className="relative h-56 overflow-hidden">
@@ -126,7 +137,7 @@ function DogCard({ dog }: { dog: Dog }) {
         <div className="grid grid-cols-2 gap-6 mb-8">
            <div className="space-y-1">
               <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Sex / Age</span>
-              <p className="text-sm font-semibold">{dog.gender} • 2y 4m</p>
+              <p className="text-sm font-semibold">{dog.gender} • {age}</p>
            </div>
            <div className="space-y-1">
               <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">ID Number</span>
@@ -138,7 +149,9 @@ function DogCard({ dog }: { dog: Dog }) {
            </div>
            <div className="space-y-1">
               <span className="text-[10px] uppercase font-bold tracking-widest text-muted-foreground">Blockchain</span>
-              <p className="text-[10px] font-mono text-emerald-500 font-bold uppercase tracking-tighter">CONFIRMED_TX</p>
+              <p className={`text-[10px] font-mono font-bold uppercase tracking-tighter ${dog.blockchainSyncStatus === 'confirmed' ? 'text-emerald-500' : 'text-amber-500'}`}>
+                {dog.blockchainSyncStatus === 'confirmed' ? 'CONFIRMED_TX' : 'PENDING_TX'}
+              </p>
            </div>
         </div>
 
