@@ -25,7 +25,7 @@ router.get("/users/me", authenticate, async (req: any, res) => {
 
 // POST /register
 router.post("/register", async (req, res) => {
-  const { name, email, password, phone, nationalId, role } = req.body;
+  const { name, email, password, phone, nationalId, role, province } = req.body;
 
   if (!name || !email || !password || !role) {
     return res.status(400).json({ error: "Missing required fields" });
@@ -45,6 +45,7 @@ router.post("/register", async (req, res) => {
     phone,
     nationalId,
     role,
+    province,
     registeredAt: new Date(),
   };
 

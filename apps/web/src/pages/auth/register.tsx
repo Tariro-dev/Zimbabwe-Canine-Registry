@@ -141,19 +141,37 @@ export default function Register() {
                             onChange={(e: any) => updateField('nationalId', e.target.value)}
                           />
                       </div>
-                      <div className="space-y-2">
-                         <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Registry Role</label>
-                         <Select value={formData.role} onValueChange={(v) => updateField('role', v)}>
-                            <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/30">
-                               <SelectValue placeholder="Select your role" />
-                            </SelectTrigger>
-                            <SelectContent className="bg-[#1a1a1a] border-white/10">
-                               <SelectItem value="owner">Dog Owner</SelectItem>
-                               <SelectItem value="breeder">Verified Breeder</SelectItem>
-                               <SelectItem value="vet">Veterinarian</SelectItem>
-                               <SelectItem value="regulator">Registry Official</SelectItem>
-                            </SelectContent>
-                         </Select>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Province</label>
+                           <Select value={formData.province} onValueChange={(v) => updateField('province', v)}>
+                              <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/30">
+                                 <SelectValue placeholder="Select Province" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-[#1a1a1a] border-white/10">
+                                 {[
+                                    "Harare", "Bulawayo", "Manicaland", "Mashonaland Central", "Mashonaland East",
+                                    "Mashonaland West", "Masvingo", "Matabeleland North", "Matabeleland South", "Midlands"
+                                 ].map(p => (
+                                    <SelectItem key={p} value={p}>{p}</SelectItem>
+                                 ))}
+                              </SelectContent>
+                           </Select>
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">Registry Role</label>
+                           <Select value={formData.role} onValueChange={(v) => updateField('role', v)}>
+                              <SelectTrigger className="h-14 bg-white/5 border-white/10 rounded-2xl focus:ring-primary/30">
+                                 <SelectValue placeholder="Select your role" />
+                              </SelectTrigger>
+                              <SelectContent className="bg-[#1a1a1a] border-white/10">
+                                 <SelectItem value="owner">Dog Owner</SelectItem>
+                                 <SelectItem value="breeder">Verified Breeder</SelectItem>
+                                 <SelectItem value="vet">Veterinarian</SelectItem>
+                                 <SelectItem value="regulator">Registry Official</SelectItem>
+                              </SelectContent>
+                           </Select>
+                        </div>
                       </div>
                    </motion.div>
                 )}
