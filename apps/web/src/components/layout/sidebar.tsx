@@ -40,8 +40,8 @@ export function Sidebar() {
     >
       <div className="p-6 flex items-center justify-between">
         {!isCollapsed && (
-          <div className="flex items-center gap-3 overflow-hidden animate-in fade-in slide-in-from-left-4">
-            <img src="/favicon.svg" alt="ZCR" className="w-8 h-8 brightness-125" />
+          <div className="flex items-center gap-3 overflow-hidden animate-in fade-in slide-in-from-left-4 cursor-pointer" onClick={() => setLocation('/dashboard')}>
+            <img src="/favicon.svg" alt="ZCR" className="w-10 h-10 brightness-125" />
             <span className="font-bold text-lg text-sidebar-foreground tracking-tighter uppercase truncate">
               ZCR <span className="text-primary">Portal</span>
             </span>
