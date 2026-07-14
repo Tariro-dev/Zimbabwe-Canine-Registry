@@ -61,9 +61,11 @@ export default function DogsList() {
               className="pl-12 h-12 bg-card/30 border-white/5 rounded-2xl focus-visible:ring-primary/30"
             />
           </div>
-          <Button className="h-12 w-12 md:w-auto md:px-6 rounded-2xl bg-primary hover:bg-primary/90 text-black font-bold gap-2 shadow-lg shadow-primary/10">
-            <Plus className="w-5 h-5" /> <span className="hidden md:inline">Add Dog</span>
-          </Button>
+          <Link href="/dogs/register">
+            <Button className="h-12 w-12 md:w-auto md:px-6 rounded-2xl bg-primary hover:bg-primary/90 text-black font-bold gap-2 shadow-lg shadow-primary/10">
+              <Plus className="w-5 h-5" /> <span className="hidden md:inline">Add Dog</span>
+            </Button>
+          </Link>
         </div>
       </div>
 
@@ -171,15 +173,21 @@ function DogCard({ dog }: { dog: Dog }) {
               <DropdownMenuContent align="end" className="w-56 bg-card border-white/10 rounded-2xl p-2">
                  <DropdownMenuLabel className="text-xs uppercase font-bold tracking-widest text-muted-foreground px-3 py-2">Quick Actions</DropdownMenuLabel>
                  <DropdownMenuSeparator className="bg-white/5" />
-                 <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
-                    <FileText className="w-4 h-4 text-primary" /> Print Certificate
-                 </DropdownMenuItem>
-                 <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
-                    <QrCode className="w-4 h-4 text-primary" /> Generate Passport QR
-                 </DropdownMenuItem>
-                 <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
-                    <ArrowRightLeft className="w-4 h-4 text-primary" /> Transfer Ownership
-                 </DropdownMenuItem>
+                 <Link href={`/dogs/${dog.id}/certificate`}>
+                    <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
+                        <FileText className="w-4 h-4 text-primary" /> Print Certificate
+                    </DropdownMenuItem>
+                 </Link>
+                 <Link href={`/dogs/${dog.id}`}>
+                    <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
+                        <QrCode className="w-4 h-4 text-primary" /> Generate Passport QR
+                    </DropdownMenuItem>
+                 </Link>
+                 <Link href={`/dogs/${dog.id}/transfer`}>
+                    <DropdownMenuItem className="rounded-xl gap-3 p-3 cursor-pointer">
+                        <ArrowRightLeft className="w-4 h-4 text-primary" /> Transfer Ownership
+                    </DropdownMenuItem>
+                 </Link>
               </DropdownMenuContent>
            </DropdownMenu>
         </div>

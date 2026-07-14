@@ -100,13 +100,14 @@ export default function Dashboard() {
                   </Button>
                 </Link>
               )}
-              <Button
-                variant="outline"
-                className="rounded-2xl h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 gap-2"
-                onClick={() => toast.info("Certificate generation module is initializing...")}
-              >
-                <FileCheck className="w-5 h-5" /> Generate Certificates
-              </Button>
+              <Link href="/dogs">
+                <Button
+                  variant="outline"
+                  className="rounded-2xl h-12 px-6 border-white/10 bg-white/5 hover:bg-white/10 gap-2"
+                >
+                  <FileCheck className="w-5 h-5" /> Generate Certificates
+                </Button>
+              </Link>
             </div>
           </div>
           <div className="hidden lg:block">
@@ -206,12 +207,13 @@ export default function Dashboard() {
                    <div className="text-lg font-mono font-bold">{10 + Math.floor(Math.random() * 20)}ms</div>
                 </div>
               </div>
-              <Button
-                className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
-                onClick={() => toast.success("Accessing National Canine Blockchain Ledger...")}
-              >
-                Blockchain Explorer
-              </Button>
+              <Link href="/audit-log">
+                <Button
+                  className="w-full h-12 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 transition-all"
+                >
+                  Blockchain Explorer
+                </Button>
+              </Link>
             </CardContent>
           </Card>
 
