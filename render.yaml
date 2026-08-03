@@ -1,0 +1,27 @@
+services:
+  # 1. The Backend API Server (Dockerized for stability)
+  - type: web
+    name: zcr-api
+    runtime: docker
+    plan: free
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: DATABASE_URL
+        value: postgresql://neondb_owner:npg_OBnjTlYxW4s9@ep-lucky-smoke-abb1n5rf.eu-west-2.aws.neon.tech/neondb?sslmode=require
+      - key: JWT_SECRET
+        generateValue: true
+      - key: PORT
+        value: 5000
+
+  # 2. The Web Frontend (Static Site)
+  - type: static_site
+    name: zcr-web
+    buildCommand: pnpm install && pnpm --filter @workspace/web run build
+    publishDir: apps/web/dist/public
+    envVars:
+      - key: VITE_API_URL
+        fromService:
+          name: zcr-api
+          type: web
+          property: host
