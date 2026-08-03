@@ -24,7 +24,7 @@ import { setBaseUrl } from '@workspace/api-client-react';
 // Initialize API client base URL
 const debuggerHost = Constants.expoConfig?.hostUri;
 const localhost = debuggerHost?.split(':')[0] || 'localhost';
-const apiUrl = `http://${localhost}:5000`;
+const apiUrl = process.env.EXPO_PUBLIC_API_URL || `http://${localhost}:5000`;
 setBaseUrl(apiUrl);
 
 SplashScreen.preventAutoHideAsync();
