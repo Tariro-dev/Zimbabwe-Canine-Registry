@@ -80,7 +80,7 @@ router.post("/login", authLimiter, async (req, res) => {
 router.post("/register", registerLimiter, async (req, res) => {
   try {
     const body = RegisterUserBody.parse(req.body);
-    const { name, email, password, phone, nationalId, role, province } = body;
+    const { name, email, password, phone, nationalId, role, province, kennelName, licenseNumber } = body;
 
     // Check if user already exists
     const existing = await db.select().from(usersTable).where(eq(usersTable.email, email));
@@ -101,6 +101,8 @@ router.post("/register", registerLimiter, async (req, res) => {
       nationalId,
       role,
       province,
+      kennelName,
+      licenseNumber,
       verificationToken,
       isEmailVerified: false,
       registeredAt: new Date(),

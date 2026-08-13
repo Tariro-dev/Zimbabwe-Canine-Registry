@@ -8,6 +8,8 @@ export const RegisterUserBody = zod.object({
   nationalId: zod.string().optional(),
   role: zod.enum(['owner', 'breeder', 'vet', 'regulator']),
   province: zod.string().optional(),
+  kennelName: zod.string().optional(),
+  licenseNumber: zod.string().optional(),
 });
 
 export const LoginUserBody = zod.object({
